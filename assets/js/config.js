@@ -49,7 +49,7 @@ window.ALMA = {
        2. Cambia `fotosReales` a true.
      Si alguna falta, esa sola vuelve al marcador de color.
      ────────────────────────────────────────────────────── */
-  fotosReales: false,
+  fotosReales: true,
   formatoFotos: 'jpg',
 
   /* ── Horario de atención ─────────────────────────────────

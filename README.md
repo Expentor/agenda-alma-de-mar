@@ -96,26 +96,38 @@ HTTPS**. Sin HTTPS, la contraseña viaja en claro por la red. Está explicado en
 
 ## Las fotos de tu spa
 
-Mientras no haya fotos, la página muestra marcadores con los colores de la marca. Para
-poner las tuyas:
+Van en `assets/img/spa/` con **estos nombres exactos**. El que falte se sustituye solo
+por un marcador con los colores de la marca, sin romper nada.
 
-1. Guárdalas en `assets/img/spa/` con **estos nombres exactos**:
+| Archivo | Dónde sale | Orientación | Ahora |
+|---|---|---|---|
+| `hero.jpg` | Portada, a pantalla completa | **Horizontal** | ✅ el rótulo del spa |
+| `recepcion.jpg` | Sección «El spa» | Vertical | ✅ la cabina desde la camilla |
+| `producto.jpg` | Recuadro pequeño sobre la anterior | Cuadrada | ✅ el bote de hydrojelly |
+| `cabina.jpg` | Sección «La cabina» | Vertical | ✅ la cabina con el equipo |
+| `facial.jpg` | Galería, pieza alta | Vertical | ✅ la mascarilla |
+| `masaje.jpg` | Galería | Horizontal | ❌ falta |
+| `detalle.jpg` | Galería | Horizontal | ❌ falta |
+| `equipo.jpg` | Galería, pieza ancha | Horizontal | ❌ falta |
 
-   | Archivo | Dónde sale | Orientación |
-   |---|---|---|
-   | `hero.jpg` | Portada, a pantalla completa | Horizontal |
-   | `recepcion.jpg` | Sección «El spa» | Vertical |
-   | `producto.jpg` | Recuadro pequeño sobre la anterior | Cuadrada |
-   | `cabina.jpg` | Sección «La cabina» | Vertical |
-   | `facial.jpg` | Galería, pieza alta | Vertical |
-   | `masaje.jpg` | Galería | Horizontal |
-   | `detalle.jpg` | Galería | Horizontal |
-   | `equipo.jpg` | Galería, pieza ancha | Horizontal |
+Para activarlas, en `assets/js/config.js` debe estar `fotosReales: true` (ya lo está).
 
-2. En `assets/js/config.js`, cambia `fotosReales: false` por `fotosReales: true`.
+### La galería se esconde sola
 
-Si alguna falta, esa sola vuelve a su marcador de color. Exporta a 1600–2000 px de ancho
-y menos de 400 KB; la de portada admite hasta 2400 px.
+Una foto suelta entre marcadores de color se ve a medio hacer, así que **la sección
+«Galería» solo aparece cuando hay al menos 3 fotos suyas**. Ahora mismo hay una, así
+que está oculta y su enlace no sale en el menú. En cuanto guardes dos más
+(`masaje.jpg`, `detalle.jpg` o `equipo.jpg`), la sección vuelve sola.
+
+### Consejos al fotografiar
+
+- **La portada (`hero.jpg`)** lleva un velo claro encima y el texto en azul marino.
+  Cuanto más luminosa la foto, mejor se lee. La actual da 7,35:1 de contraste en su
+  zona más oscura, que es nivel AAA.
+- Exporta a **1600–2000 px de ancho** y menos de 400 KB. La de portada admite 2400 px.
+- Si sale una clienta reconocible, **pídele permiso por escrito** antes de publicarla.
+- Los originales sin recortar están guardados como `*-original.jpg` por si quieres
+  otro encuadre.
 
 ---
 

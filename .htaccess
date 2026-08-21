@@ -1,0 +1,33 @@
+# ══════════════════════════════════════════════════════════
+#  ALMA DE MAR · Caché y seguridad básica
+# ══════════════════════════════════════════════════════════
+
+# ───────────── Caché ─────────────
+# El HTML se revalida siempre: si no, el navegador se queda con una versión
+# vieja y no ve los cambios ni aunque subas los archivos nuevos.
+# Los CSS y JS sí se guardan mucho tiempo, porque llevan «?v=» en la dirección
+# y basta con subir ese número para que se pidan de nuevo.
+<IfModule mod_headers.c>
+  <FilesMatch "\.(html|php)$">
+    Header set Cache-Control "no-cache, must-revalidate"
+  </FilesMatch>
+  <FilesMatch "\.(css|js)$">
+    Header set Cache-Control "public, max-age=31536000"
+  </FilesMatch>
+  <FilesMatch "\.(jpg|jpeg|png|webp|svg|ico|woff2)$">
+    Header set Cache-Control "public, max-age=604800"
+  </FilesMatch>
+
+  # ───────────── Cabeceras de seguridad ─────────────
+  Header always set X-Content-Type-Options "nosniff"
+  Header always set X-Frame-Options "SAMEORIGIN"
+  Header always set Referrer-Policy "strict-origin-when-cross-origin"
+</IfModule>
+
+# ───────────── Compresión ─────────────
+<IfModule mod_deflate.c>
+  AddOutputFilterByType DEFLATE text/html text/css application/javascript application/json image/svg+xml
+</IfModule>
+
+# El listado de carpetas no aporta nada y enseña de más
+Options -Indexes

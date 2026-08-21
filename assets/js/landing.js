@@ -49,19 +49,46 @@
   });
 
   /* ───────────── Fotos del spa ─────────────
-     Cada hueco arranca con su marcador de marca. Si config.js
-     dice que ya hay fotos, se cambian por las reales; y si una
-     falta, esa vuelve sola a su marcador. */
-  if (cfg.fotosReales) {
-    const ext = (cfg.formatoFotos || 'jpg').replace(/^\./, '');
-    document.querySelectorAll('[data-foto]').forEach((img) => {
-      const marcador = img.src;
-      img.addEventListener('error', function alFallar() {
-        img.removeEventListener('error', alFallar);
-        img.src = marcador;
-      });
-      img.src = `assets/img/spa/${img.dataset.foto}.${ext}`;
+     Cada hueco arranca con su marcador de marca. Si config.js dice que ya
+     hay fotos, se cambian por las reales; y si una falta, esa vuelve sola
+     a su marcador. */
+  const GALERIA_MINIMA = 3;   // menos fotos que esto y la galería no luce
+
+  function existeFoto(url) {
+    return new Promise((listo) => {
+      const prueba = new Image();
+      prueba.onload  = () => listo(true);
+      prueba.onerror = () => listo(false);
+      prueba.src = url;
     });
+  }
+
+  async function colocarFotos() {
+    if (!cfg.fotosReales) return;
+    const ext = (cfg.formatoFotos || 'jpg').replace(/^\./, '');
+
+    const huecos = [...document.querySelectorAll('[data-foto]')];
+    const hay = await Promise.all(
+      huecos.map((img) => existeFoto(`assets/img/spa/${img.dataset.foto}.${ext}`))
+    );
+
+    huecos.forEach((img, i) => {
+      if (hay[i]) img.src = `assets/img/spa/${img.dataset.foto}.${ext}`;
+    });
+
+    /* La galería solo se sostiene con varias fotos reales. Con una suelta
+       entre marcadores de color se ve a medio hacer, así que se esconde
+       entera hasta que haya suficientes. Vuelve sola al añadirlas. */
+    const galeria = document.getElementById('espacio');
+    if (!galeria) return;
+    const enGaleria = huecos
+      .map((img, i) => (galeria.contains(img) ? hay[i] : false))
+      .filter(Boolean).length;
+
+    if (enGaleria < GALERIA_MINIMA) {
+      galeria.hidden = true;
+      document.querySelectorAll('a[href="#espacio"]').forEach((a) => a.remove());
+    }
   }
 
   /* ───────────── Carta de servicios ─────────────
@@ -210,8 +237,9 @@
 
   form.addEventListener('input', () => mostrarAviso(''));
 
-  /* La carta llega por red: primero se pinta, luego se observa el scroll. */
-  cargarCarta().finally(activarRevelado);
+  /* Carta y fotos llegan por red: primero se pinta todo, luego se observa
+     el scroll, para que el vigía vea también lo que se generó al vuelo. */
+  Promise.all([cargarCarta(), colocarFotos()]).finally(activarRevelado);
 
   function activarRevelado() {
     const piezas = document.querySelectorAll('.revelar');
