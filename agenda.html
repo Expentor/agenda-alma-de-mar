@@ -1,0 +1,242 @@
+<!doctype html>
+<html lang="es">
+<head>
+<meta charset="utf-8">
+<meta name="viewport" content="width=device-width, initial-scale=1, viewport-fit=cover">
+<title>Agenda · Alma de Mar</title>
+<meta name="description" content="Agenda de citas de Alma de Mar · Facial &amp; Wellness">
+<meta name="robots" content="noindex, nofollow">
+<meta name="theme-color" content="#182D45">
+<link rel="icon" href="assets/img/favicon.svg" type="image/svg+xml">
+<link rel="apple-touch-icon" href="assets/img/favicon.svg">
+<link rel="manifest" href="manifest-agenda.webmanifest">
+<link rel="preconnect" href="https://fonts.googleapis.com">
+<link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
+<link href="https://fonts.googleapis.com/css2?family=Josefin+Sans:wght@200;300;400&family=Jost:wght@300;400;500&display=swap" rel="stylesheet">
+<link rel="stylesheet" href="assets/css/estilos.css?v=3">
+</head>
+<body>
+
+<!-- ═══════════════ Pantalla de acceso ═══════════════ -->
+<section class="acceso" id="acceso" hidden>
+  <div class="acceso__caja">
+    <img src="assets/img/isotipo-claro.svg" alt="" class="acceso__sello" aria-hidden="true">
+    <h1 class="acceso__titulo">Agenda</h1>
+    <p class="acceso__lema">Alma de Mar · Facial &amp; Wellness</p>
+
+    <form id="form-acceso" class="acceso__form" autocomplete="on">
+      <label class="campo-grupo">Usuario
+        <input class="campo" name="usuario" autocomplete="username" required autocapitalize="none" spellcheck="false">
+      </label>
+      <label class="campo-grupo">Contraseña
+        <input class="campo" name="clave" type="password" autocomplete="current-password" required>
+      </label>
+      <p class="acceso__error" id="acceso-error" role="alert" hidden></p>
+      <button class="boton boton--oro boton--bloque" name="entrar" type="submit">Entrar</button>
+    </form>
+
+    <a class="acceso__volver" href="index.html">← Volver a la página del spa</a>
+  </div>
+</section>
+
+<!-- ═══════════════ Agenda ═══════════════ -->
+<div id="app" hidden>
+
+<header class="cabecera">
+  <div class="cabecera__marca">
+    <img src="assets/img/logo-claro.svg" alt="Alma de Mar · Facial &amp; Wellness" class="logo">
+    <img src="assets/img/isotipo-claro.svg" alt="Alma de Mar" class="logo logo--mini">
+  </div>
+
+  <nav class="pestanas" aria-label="Secciones">
+    <button class="pestana" data-vista="dia" aria-current="page">Día</button>
+    <button class="pestana" data-vista="semana">Semana</button>
+    <button class="pestana" data-vista="clientes">Clientes</button>
+    <button class="pestana" data-vista="ajustes">Ajustes</button>
+  </nav>
+
+  <div class="cabecera__acciones">
+    <button class="boton boton--oro" id="btn-nueva">+ Nueva cita</button>
+    <button class="boton boton--fino" id="btn-salir" title="Cerrar sesión">Salir</button>
+  </div>
+</header>
+
+<main class="contenido">
+
+  <!-- ───────────── DÍA ───────────── -->
+  <section class="vista" id="vista-dia">
+    <div class="barra-fecha">
+      <div class="nav-fecha">
+        <button class="icono" id="dia-anterior" aria-label="Día anterior">‹</button>
+        <input type="date" id="fecha-dia" aria-label="Fecha">
+        <button class="icono" id="dia-siguiente" aria-label="Día siguiente">›</button>
+        <button class="boton boton--fino" id="btn-hoy">Hoy</button>
+      </div>
+      <p class="titulo-fecha" id="titulo-dia"></p>
+      <div class="resumen" id="resumen-dia"></div>
+    </div>
+    <div id="agenda-dia" class="agenda"></div>
+  </section>
+
+  <!-- ───────────── SEMANA ───────────── -->
+  <section class="vista" id="vista-semana" hidden>
+    <div class="barra-fecha">
+      <div class="nav-fecha">
+        <button class="icono" id="semana-anterior" aria-label="Semana anterior">‹</button>
+        <button class="boton boton--fino" id="btn-semana-actual">Esta semana</button>
+        <button class="icono" id="semana-siguiente" aria-label="Semana siguiente">›</button>
+      </div>
+      <p class="titulo-fecha" id="titulo-semana"></p>
+      <div class="resumen" id="resumen-semana"></div>
+    </div>
+    <div id="rejilla-semana" class="semana"></div>
+  </section>
+
+  <!-- ───────────── CLIENTES ───────────── -->
+  <section class="vista" id="vista-clientes" hidden>
+    <div class="barra-fecha">
+      <p class="titulo-fecha">Clientas y citas</p>
+      <input type="search" id="buscador" class="campo campo--busqueda" placeholder="Buscar por nombre, teléfono o servicio…">
+    </div>
+    <div id="lista-clientes" class="tarjetas"></div>
+  </section>
+
+  <!-- ───────────── AJUSTES ───────────── -->
+  <section class="vista" id="vista-ajustes" hidden>
+    <div class="panel">
+      <h2 class="titulo-seccion">Horario del spa</h2>
+      <div id="horario-agenda" class="horario-agenda"></div>
+      <p class="ayuda" style="margin:1.1rem 0 1.4rem">
+        <strong>Solo se pueden agendar citas dentro de estas horas.</strong> Es el mismo
+        horario que ven las clientas en la página pública, y se cambia en un único sitio:
+        <code>assets/js/config.js</code> → <code>horario</code>.
+      </p>
+      <div class="rejilla-campos">
+        <label class="campo-grupo">Intervalo
+          <select id="cfg-intervalo" class="campo">
+            <option value="15">15 minutos</option>
+            <option value="30">30 minutos</option>
+            <option value="60">60 minutos</option>
+          </select></label>
+        <label class="campo-grupo">Prefijo país (WhatsApp)
+          <input type="text" id="cfg-prefijo" class="campo" placeholder="52"></label>
+      </div>
+    </div>
+
+    <div class="panel">
+      <h2 class="titulo-seccion">Servicios</h2>
+      <p class="ayuda">Al elegir un servicio en una cita se rellenan solos la duración y el precio.</p>
+      <div id="lista-servicios" class="filas"></div>
+      <form id="form-servicio" class="fila-alta">
+        <input class="campo" name="nombre" placeholder="Nombre del servicio" required>
+        <input class="campo campo--corto" name="duracion" type="number" min="5" step="5" placeholder="min" required>
+        <input class="campo campo--corto" name="precio" type="number" min="0" step="10" placeholder="$" required>
+        <button class="boton boton--fino" type="submit">Añadir</button>
+      </form>
+    </div>
+
+    <div class="panel">
+      <h2 class="titulo-seccion">Terapeutas / cabinas</h2>
+      <div id="lista-terapeutas" class="etiquetas"></div>
+      <form id="form-terapeuta" class="fila-alta">
+        <input class="campo" name="nombre" placeholder="Nombre" required>
+        <button class="boton boton--fino" type="submit">Añadir</button>
+      </form>
+    </div>
+
+    <div class="panel">
+      <h2 class="titulo-seccion">Mensaje de WhatsApp</h2>
+      <p class="ayuda">Etiquetas disponibles: <code>{cliente}</code> <code>{servicio}</code> <code>{fecha}</code> <code>{hora}</code> <code>{spa}</code></p>
+      <textarea id="cfg-plantilla" class="campo campo--area" rows="5"></textarea>
+    </div>
+
+    <!-- ───────────── Contraseña ───────────── -->
+    <div class="panel">
+      <h2 class="titulo-seccion">Contraseña de acceso</h2>
+      <p class="ayuda">
+        Se guarda cifrada en el servidor, así que en cuanto la cambies vale
+        <strong>en todos tus dispositivos</strong>. Usa una contraseña larga: cuatro
+        palabras sueltas son más seguras y más fáciles de recordar que una corta con símbolos.
+      </p>
+      <form id="form-clave" class="rejilla-campos">
+        <label class="campo-grupo">Contraseña actual
+          <input class="campo" type="password" name="actual" autocomplete="current-password" required></label>
+        <label class="campo-grupo">Nueva contraseña
+          <input class="campo" type="password" name="nueva" autocomplete="new-password" minlength="8" required></label>
+        <label class="campo-grupo">Repite la nueva
+          <input class="campo" type="password" name="repite" autocomplete="new-password" minlength="8" required></label>
+        <div class="campo-grupo campo-grupo--ancho">
+          <button class="boton boton--fino" type="submit" style="align-self:flex-start">Cambiar contraseña</button>
+        </div>
+      </form>
+      <p class="clave-resultado" id="clave-resultado" hidden></p>
+    </div>
+
+    <div class="panel panel--aviso">
+      <h2 class="titulo-seccion">Copia de seguridad</h2>
+      <p class="ayuda">
+        Las citas viven en la base de datos del servidor, así que las ves igual desde el
+        celular y desde la computadora, y no se pierden aunque borres los datos del navegador.
+        Aun así, <strong>descarga una copia cada mes</strong>: es tu red por si falla el servidor.
+      </p>
+      <div class="fila-alta">
+        <button class="boton boton--fino" id="btn-exportar">Descargar copia</button>
+        <button class="boton boton--fino" id="btn-importar">Restaurar copia</button>
+        <input type="file" id="archivo-importar" accept="application/json" hidden>
+      </div>
+    </div>
+
+    <p class="pie-agenda"><a href="index.html">← Ver la página pública del spa</a></p>
+  </section>
+</main>
+
+<!-- ───────────── Modal: alta / edición ───────────── -->
+<dialog id="dlg-cita" class="modal">
+  <form method="dialog" id="form-cita" class="modal__cuerpo">
+    <h2 class="titulo-seccion" id="titulo-modal">Nueva cita</h2>
+    <input type="hidden" name="id">
+    <div class="rejilla-campos">
+      <label class="campo-grupo">Fecha<input class="campo" type="date" name="fecha" required></label>
+      <label class="campo-grupo">Hora<input class="campo" type="time" name="hora" required></label>
+      <label class="campo-grupo campo-grupo--ancho">Servicio
+        <select class="campo" name="servicioId" id="select-servicio" required></select></label>
+      <label class="campo-grupo">Duración (min)<input class="campo" type="number" name="duracion" min="5" step="5" required></label>
+      <label class="campo-grupo">Precio<input class="campo" type="number" name="precio" min="0" step="10" required></label>
+      <label class="campo-grupo">Clienta<input class="campo" name="cliente" placeholder="Nombre y apellido" required></label>
+      <label class="campo-grupo">Teléfono<input class="campo" name="telefono" inputmode="tel" placeholder="55 1234 5678"></label>
+      <label class="campo-grupo">Terapeuta
+        <select class="campo" name="terapeuta" id="select-terapeuta"></select></label>
+      <label class="campo-grupo">Estado
+        <select class="campo" name="estado">
+          <option value="pendiente">Pendiente</option>
+          <option value="confirmada">Confirmada</option>
+          <option value="completada">Completada</option>
+          <option value="cancelada">Cancelada</option>
+          <option value="ausente">No asistió</option>
+        </select></label>
+      <label class="campo-grupo campo-grupo--ancho">Notas
+        <textarea class="campo campo--area" name="notas" rows="2" placeholder="Alergias, preferencias, tratamiento previo…"></textarea></label>
+    </div>
+    <p class="aviso-conflicto" id="aviso-conflicto" hidden></p>
+    <div class="modal__pie">
+      <button class="boton boton--fino" value="cancelar" formnovalidate>Cancelar</button>
+      <button class="boton boton--oro" value="guardar" id="btn-guardar-cita">Guardar cita</button>
+    </div>
+  </form>
+</dialog>
+
+<!-- ───────────── Modal: detalle ───────────── -->
+<dialog id="dlg-detalle" class="modal">
+  <div class="modal__cuerpo" id="detalle-cuerpo"></div>
+</dialog>
+
+</div><!-- /#app -->
+
+<div id="avisos" class="avisos" aria-live="polite"></div>
+
+<script src="assets/js/config.js?v=3"></script>
+<script src="assets/js/api.js?v=3"></script>
+<script src="assets/js/app.js?v=3"></script>
+<script src="assets/js/auth.js?v=3"></script>
+</body>
+</html>

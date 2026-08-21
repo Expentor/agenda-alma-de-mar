@@ -1,2 +1,5 @@
 .DS_Store
 Thumbs.db
+
+# Lleva la contraseña de la base de datos: nunca se sube.
+api/config.php

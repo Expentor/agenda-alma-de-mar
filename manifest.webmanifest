@@ -1,7 +1,7 @@
 {
-  "name": "Agenda · Alma de Mar",
-  "short_name": "Agenda ADM",
-  "description": "Agenda de citas de Alma de Mar · Facial & Wellness",
+  "name": "Alma de Mar · Facial & Wellness",
+  "short_name": "Alma de Mar",
+  "description": "Spa de tratamientos faciales y bienestar",
   "start_url": "./index.html",
   "scope": "./",
   "display": "standalone",

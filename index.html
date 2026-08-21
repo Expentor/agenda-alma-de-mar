@@ -3,177 +3,321 @@
 <head>
 <meta charset="utf-8">
 <meta name="viewport" content="width=device-width, initial-scale=1, viewport-fit=cover">
-<title>Agenda · Alma de Mar</title>
-<meta name="description" content="Agenda de citas de Alma de Mar · Facial &amp; Wellness">
+<title>Alma de Mar · Facial &amp; Wellness</title>
+<meta name="description" content="Spa de tratamientos faciales y bienestar. Rituales de cuidado inspirados en la calma del mar. Agenda tu cita en Alma de Mar.">
 <meta name="theme-color" content="#182D45">
+
+<meta property="og:type" content="website">
+<meta property="og:title" content="Alma de Mar · Facial &amp; Wellness">
+<meta property="og:description" content="Rituales faciales y de bienestar inspirados en la calma del mar.">
+<meta property="og:image" content="assets/img/spa/hero.svg">
+
 <link rel="icon" href="assets/img/favicon.svg" type="image/svg+xml">
 <link rel="apple-touch-icon" href="assets/img/favicon.svg">
 <link rel="manifest" href="manifest.webmanifest">
+
 <link rel="preconnect" href="https://fonts.googleapis.com">
 <link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
 <link href="https://fonts.googleapis.com/css2?family=Josefin+Sans:wght@200;300;400&family=Jost:wght@300;400;500&display=swap" rel="stylesheet">
-<link rel="stylesheet" href="assets/css/estilos.css">
+<link rel="stylesheet" href="assets/css/landing.css?v=3">
 </head>
 <body>
 
-<header class="cabecera">
-  <div class="cabecera__marca">
-    <img src="assets/img/logo.svg" alt="Alma de Mar · Facial & Wellness" class="logo">
-    <img src="assets/img/isotipo.svg" alt="Alma de Mar" class="logo logo--mini">
-  </div>
+<a class="saltar" href="#servicios">Saltar al contenido</a>
 
-  <nav class="pestanas" aria-label="Secciones">
-    <button class="pestana" data-vista="dia" aria-current="page">Día</button>
-    <button class="pestana" data-vista="semana">Semana</button>
-    <button class="pestana" data-vista="clientes">Clientes</button>
-    <button class="pestana" data-vista="ajustes">Ajustes</button>
+<!-- ═══════════════ Barra superior ═══════════════ -->
+<header class="barra" id="barra">
+  <a class="barra__marca" href="#inicio" aria-label="Alma de Mar, inicio">
+    <img src="assets/img/logo-claro.svg" alt="Alma de Mar · Facial &amp; Wellness" class="barra__logo barra__logo--claro">
+    <img src="assets/img/logo.svg" alt="" aria-hidden="true" class="barra__logo barra__logo--color">
+  </a>
+
+  <nav class="barra__nav" id="menu" aria-label="Navegación principal">
+    <a href="#experiencia">El spa</a>
+    <a href="#servicios">Servicios</a>
+    <a href="#ritual">El ritual</a>
+    <a href="#espacio">Galería</a>
+    <a href="#contacto">Contacto</a>
   </nav>
 
-  <button class="boton boton--oro" id="btn-nueva">+ Nueva cita</button>
+  <a class="btn btn--oro barra__cta" href="#reservar">Reservar</a>
+
+  <button class="barra__menu" id="btn-menu" aria-expanded="false" aria-controls="menu" aria-label="Abrir menú">
+    <span></span><span></span><span></span>
+  </button>
 </header>
 
-<main class="contenido">
+<main>
 
-  <!-- ───────────── DÍA ───────────── -->
-  <section class="vista" id="vista-dia">
-    <div class="barra-fecha">
-      <div class="nav-fecha">
-        <button class="icono" id="dia-anterior" aria-label="Día anterior">‹</button>
-        <input type="date" id="fecha-dia" aria-label="Fecha">
-        <button class="icono" id="dia-siguiente" aria-label="Día siguiente">›</button>
-        <button class="boton boton--fino" id="btn-hoy">Hoy</button>
+<!-- ═══════════════ Portada ═══════════════ -->
+<section class="portada" id="inicio">
+  <img class="portada__foto" src="assets/img/spa/hero.svg" data-foto="hero" alt="Interior del spa Alma de Mar">
+  <div class="portada__velo"></div>
+
+  <div class="portada__texto">
+    <img src="assets/img/isotipo-claro.svg" alt="" class="portada__sello" aria-hidden="true">
+    <p class="antetitulo">Facial &amp; Wellness</p>
+    <h1 class="portada__titulo">La calma del mar,<br>hecha ritual</h1>
+    <p class="portada__bajada">
+      Tratamientos faciales y de bienestar en un espacio pensado para que el cuerpo
+      baje el ritmo. Cada sesión se diseña para tu piel, sin prisa.
+    </p>
+    <div class="portada__acciones">
+      <a class="btn btn--oro btn--grande" href="#reservar">Agendar mi cita</a>
+      <a class="btn btn--claro btn--grande" href="#servicios">Ver tratamientos</a>
+    </div>
+  </div>
+
+  <a class="portada__baja" href="#experiencia" aria-label="Continuar">
+    <span></span>
+  </a>
+</section>
+
+<!-- ═══════════════ Cintillo de confianza ═══════════════ -->
+<div class="cintillo">
+  <div class="cintillo__item"><strong>+6 años</strong><span>cuidando pieles</span></div>
+  <div class="cintillo__item"><strong>Cosmética</strong><span>de grado profesional</span></div>
+  <div class="cintillo__item"><strong>Diagnóstico</strong><span>facial sin costo</span></div>
+  <div class="cintillo__item"><strong>Cita privada</strong><span>una clienta a la vez</span></div>
+</div>
+
+<!-- ═══════════════ El spa ═══════════════ -->
+<section class="seccion" id="experiencia">
+  <div class="doble">
+    <div class="doble__media revelar">
+      <img src="assets/img/spa/recepcion.svg" data-foto="recepcion" alt="Recepción de Alma de Mar" loading="lazy">
+      <img class="doble__media-sec" src="assets/img/spa/producto.svg" data-foto="producto" alt="Producto de cabina" loading="lazy">
+    </div>
+
+    <div class="doble__texto revelar">
+      <p class="antetitulo">El spa</p>
+      <h2 class="titulo">Un lugar para volver a ti</h2>
+      <p>
+        Alma de Mar nació de una idea sencilla: que cuidarse no debería sentirse como
+        un trámite. Trabajamos con cita cerrada, una clienta a la vez, para que el
+        espacio sea tuyo de principio a fin.
+      </p>
+      <p>
+        Cada tratamiento parte de un diagnóstico de piel. A partir de ahí elegimos
+        activos, tiempos y presión. Nada de protocolos idénticos para todas: tu piel
+        cambia con la estación, el sueño y el estrés, y el tratamiento cambia con ella.
+      </p>
+      <ul class="lista-marca">
+        <li>Diagnóstico facial antes de cada primera sesión</li>
+        <li>Cabina privada, sin música alta ni interrupciones</li>
+        <li>Rutina de casa por escrito al terminar</li>
+      </ul>
+    </div>
+  </div>
+</section>
+
+<!-- ═══════════════ Servicios ═══════════════ -->
+<section class="seccion seccion--agua" id="servicios">
+  <header class="seccion__cabecera revelar">
+    <p class="antetitulo">Carta</p>
+    <h2 class="titulo">Tratamientos</h2>
+    <p class="seccion__intro">
+      Precios de referencia. En la primera visita el diagnóstico define el tratamiento
+      exacto y te lo confirmamos antes de empezar.
+    </p>
+  </header>
+
+  <div class="carta" id="lista-servicios"><!-- lo pinta landing.js --></div>
+
+  <p class="nota-centro">
+    ¿No sabes cuál elegir? Escríbenos y te orientamos sin compromiso.
+  </p>
+</section>
+
+<!-- ═══════════════ El ritual ═══════════════ -->
+<section class="seccion" id="ritual">
+  <header class="seccion__cabecera revelar">
+    <p class="antetitulo">Cómo trabajamos</p>
+    <h2 class="titulo">El ritual Alma de Mar</h2>
+  </header>
+
+  <ol class="pasos">
+    <li class="paso revelar">
+      <span class="paso__num">01</span>
+      <h3>Diagnóstico</h3>
+      <p>Revisamos tu piel con lupa y hablamos de tu rutina, tus tiempos y lo que te molesta.</p>
+    </li>
+    <li class="paso revelar">
+      <span class="paso__num">02</span>
+      <h3>Preparación</h3>
+      <p>Limpieza profunda, vapor y exfoliación al nivel que tu piel tolere ese día.</p>
+    </li>
+    <li class="paso revelar">
+      <span class="paso__num">03</span>
+      <h3>Tratamiento</h3>
+      <p>Los activos y la aparatología del protocolo elegido, con masaje de drenaje incluido.</p>
+    </li>
+    <li class="paso revelar">
+      <span class="paso__num">04</span>
+      <h3>Cierre</h3>
+      <p>Mascarilla, protección solar y tu rutina de casa anotada para que no dependa de la memoria.</p>
+    </li>
+  </ol>
+
+  <div class="doble doble--invertido">
+    <div class="doble__media revelar">
+      <img src="assets/img/spa/cabina.svg" data-foto="cabina" alt="Cabina de tratamiento" loading="lazy">
+    </div>
+    <div class="doble__texto revelar">
+      <p class="antetitulo">La cabina</p>
+      <h2 class="titulo">Silencio, temperatura y tiempo</h2>
+      <p>
+        La camilla es térmica, la luz es regulable y el teléfono se queda fuera. Reservamos
+        margen entre citas para que nadie entre con prisa ni salga con prisa.
+      </p>
+      <p>
+        Si prefieres hablar, hablamos. Si prefieres dormirte, también está bien: es
+        la reacción más común y la tomamos como un cumplido.
+      </p>
+    </div>
+  </div>
+</section>
+
+<!-- ═══════════════ Galería ═══════════════ -->
+<section class="seccion seccion--crema" id="espacio">
+  <header class="seccion__cabecera revelar">
+    <p class="antetitulo">Galería</p>
+    <h2 class="titulo">El espacio</h2>
+  </header>
+
+  <div class="galeria">
+    <figure class="galeria__pieza galeria__pieza--alta revelar">
+      <img src="assets/img/spa/facial.svg" data-foto="facial" alt="Tratamiento facial en cabina" loading="lazy">
+    </figure>
+    <figure class="galeria__pieza revelar">
+      <img src="assets/img/spa/masaje.svg" data-foto="masaje" alt="Masaje corporal" loading="lazy">
+    </figure>
+    <figure class="galeria__pieza revelar">
+      <img src="assets/img/spa/detalle.svg" data-foto="detalle" alt="Detalle del espacio" loading="lazy">
+    </figure>
+    <figure class="galeria__pieza galeria__pieza--ancha revelar">
+      <img src="assets/img/spa/equipo.svg" data-foto="equipo" alt="Equipo de Alma de Mar" loading="lazy">
+    </figure>
+  </div>
+</section>
+
+<!-- ═══════════════ Testimonios ═══════════════ -->
+<section class="seccion" id="opiniones">
+  <header class="seccion__cabecera revelar">
+    <p class="antetitulo">Clientas</p>
+    <h2 class="titulo">Lo que nos cuentan</h2>
+  </header>
+
+  <div class="opiniones">
+    <blockquote class="opinion revelar">
+      <p>Llevaba años con la piel reactiva y es el primer sitio donde no me vendieron
+         un paquete de diez sesiones el primer día. Me explicaron qué tenía y empezamos despacio.</p>
+      <cite>Mariana R.</cite>
+    </blockquote>
+    <blockquote class="opinion revelar">
+      <p>Salgo de cada cita como si hubiera dormido nueve horas. El detalle de anotarme
+         la rutina de casa me cambió la constancia.</p>
+      <cite>Paulina G.</cite>
+    </blockquote>
+    <blockquote class="opinion revelar">
+      <p>Reservo por WhatsApp en dos mensajes y siempre me confirman. Suena a poco,
+         pero es justo lo que me hacía falta.</p>
+      <cite>Andrea M.</cite>
+    </blockquote>
+  </div>
+</section>
+
+<!-- ═══════════════ Reservar ═══════════════ -->
+<section class="reservar" id="reservar">
+  <div class="reservar__caja revelar">
+    <p class="antetitulo antetitulo--claro">Tu cita</p>
+    <h2 class="titulo titulo--claro">Agenda en un minuto</h2>
+    <p class="reservar__texto">
+      Cuéntanos qué tratamiento te interesa y cuándo te viene bien. Preparamos el
+      mensaje por ti: solo tienes que enviarlo.
+    </p>
+
+    <form class="reservar__form" id="form-reserva" novalidate>
+      <label class="campo-grupo">Tu nombre
+        <input class="campo" name="nombre" required placeholder="Nombre y apellido">
+      </label>
+      <label class="campo-grupo">Tratamiento
+        <select class="campo" name="servicio" id="reserva-servicio"></select>
+      </label>
+      <label class="campo-grupo">Día preferido
+        <input class="campo" name="fecha" type="date">
+      </label>
+      <label class="campo-grupo">Franja
+        <select class="campo" name="franja">
+          <option value="turno de mañana (11:00 – 14:00)">Mañana · 11:00 – 14:00</option>
+          <option value="turno de tarde (16:00 – 20:00)">Tarde · 16:00 – 20:00</option>
+          <option value="sábado (12:00 – 17:00)">Sábado · 12:00 – 17:00</option>
+          <option value="me acomodo a lo que haya">Me acomodo a lo que haya</option>
+        </select>
+      </label>
+      <label class="campo-grupo campo-grupo--ancho">Algo que debamos saber <span class="opcional">(opcional)</span>
+        <textarea class="campo campo--area" name="notas" rows="2" placeholder="Alergias, embarazo, tratamientos recientes…"></textarea>
+      </label>
+
+      <div class="reservar__pie">
+        <button class="btn btn--oro btn--grande" type="submit">Enviar por WhatsApp</button>
+        <a class="btn btn--claro" id="btn-llamar" href="#">Llamar al spa</a>
       </div>
-      <p class="titulo-fecha" id="titulo-dia"></p>
-      <div class="resumen" id="resumen-dia"></div>
-    </div>
-    <div id="agenda-dia" class="agenda"></div>
-  </section>
+      <p class="reservar__aviso" id="reserva-aviso" hidden></p>
+    </form>
+  </div>
+</section>
 
-  <!-- ───────────── SEMANA ───────────── -->
-  <section class="vista" id="vista-semana" hidden>
-    <div class="barra-fecha">
-      <div class="nav-fecha">
-        <button class="icono" id="semana-anterior" aria-label="Semana anterior">‹</button>
-        <button class="boton boton--fino" id="btn-semana-actual">Esta semana</button>
-        <button class="icono" id="semana-siguiente" aria-label="Semana siguiente">›</button>
+<!-- ═══════════════ Contacto ═══════════════ -->
+<section class="seccion seccion--crema" id="contacto">
+  <div class="contacto">
+    <div class="contacto__bloque revelar">
+      <p class="antetitulo">Horario</p>
+      <h2 class="titulo">Cuándo estamos</h2>
+      <dl class="horario" id="horario"><!-- lo pinta landing.js --></dl>
+      <p class="ayuda">La última cita de cada turno entra con el tiempo justo para terminar antes de cerrar.</p>
+    </div>
+
+    <div class="contacto__bloque revelar">
+      <p class="antetitulo">Dónde</p>
+      <h2 class="titulo">Cómo llegar</h2>
+      <address class="direccion" id="direccion"><!-- lo pinta landing.js --></address>
+      <div class="contacto__acciones">
+        <a class="btn btn--oscuro" id="btn-mapa" href="#" target="_blank" rel="noopener">Ver en el mapa</a>
+        <a class="btn btn--fino" id="btn-wa" href="#" target="_blank" rel="noopener">WhatsApp</a>
       </div>
-      <p class="titulo-fecha" id="titulo-semana"></p>
-      <div class="resumen" id="resumen-semana"></div>
+      <div class="redes" id="redes"><!-- lo pinta landing.js --></div>
     </div>
-    <div id="rejilla-semana" class="semana"></div>
-  </section>
+  </div>
+</section>
 
-  <!-- ───────────── CLIENTES ───────────── -->
-  <section class="vista" id="vista-clientes" hidden>
-    <div class="barra-fecha">
-      <p class="titulo-fecha">Clientas y citas</p>
-      <input type="search" id="buscador" class="campo campo--busqueda" placeholder="Buscar por nombre, teléfono o servicio…">
-    </div>
-    <div id="lista-clientes" class="tarjetas"></div>
-  </section>
-
-  <!-- ───────────── AJUSTES ───────────── -->
-  <section class="vista" id="vista-ajustes" hidden>
-    <div class="panel">
-      <h2 class="titulo-seccion">Horario del spa</h2>
-      <div class="rejilla-campos">
-        <label class="campo-grupo">Apertura
-          <input type="time" id="cfg-apertura" class="campo"></label>
-        <label class="campo-grupo">Cierre
-          <input type="time" id="cfg-cierre" class="campo"></label>
-        <label class="campo-grupo">Intervalo
-          <select id="cfg-intervalo" class="campo">
-            <option value="15">15 minutos</option>
-            <option value="30">30 minutos</option>
-            <option value="60">60 minutos</option>
-          </select></label>
-        <label class="campo-grupo">Prefijo país (WhatsApp)
-          <input type="text" id="cfg-prefijo" class="campo" placeholder="52"></label>
-      </div>
-    </div>
-
-    <div class="panel">
-      <h2 class="titulo-seccion">Servicios</h2>
-      <p class="ayuda">Al elegir un servicio en una cita se rellenan solos la duración y el precio.</p>
-      <div id="lista-servicios" class="filas"></div>
-      <form id="form-servicio" class="fila-alta">
-        <input class="campo" name="nombre" placeholder="Nombre del servicio" required>
-        <input class="campo campo--corto" name="duracion" type="number" min="5" step="5" placeholder="min" required>
-        <input class="campo campo--corto" name="precio" type="number" min="0" step="10" placeholder="$" required>
-        <button class="boton boton--fino" type="submit">Añadir</button>
-      </form>
-    </div>
-
-    <div class="panel">
-      <h2 class="titulo-seccion">Terapeutas / cabinas</h2>
-      <div id="lista-terapeutas" class="etiquetas"></div>
-      <form id="form-terapeuta" class="fila-alta">
-        <input class="campo" name="nombre" placeholder="Nombre" required>
-        <button class="boton boton--fino" type="submit">Añadir</button>
-      </form>
-    </div>
-
-    <div class="panel">
-      <h2 class="titulo-seccion">Mensaje de WhatsApp</h2>
-      <p class="ayuda">Etiquetas disponibles: <code>{cliente}</code> <code>{servicio}</code> <code>{fecha}</code> <code>{hora}</code> <code>{spa}</code></p>
-      <textarea id="cfg-plantilla" class="campo campo--area" rows="5"></textarea>
-    </div>
-
-    <div class="panel panel--aviso">
-      <h2 class="titulo-seccion">Copia de seguridad</h2>
-      <p class="ayuda"><strong>Importante:</strong> las citas se guardan en este navegador y en este dispositivo. Si borras los datos del navegador o cambias de equipo, se pierden. Descarga una copia cada semana.</p>
-      <div class="fila-alta">
-        <button class="boton boton--fino" id="btn-exportar">Descargar copia</button>
-        <button class="boton boton--fino" id="btn-importar">Restaurar copia</button>
-        <input type="file" id="archivo-importar" accept="application/json" hidden>
-        <button class="boton boton--fino boton--peligro" id="btn-borrar">Borrar todo</button>
-      </div>
-    </div>
-  </section>
 </main>
 
-<!-- ───────────── Modal: alta / edición ───────────── -->
-<dialog id="dlg-cita" class="modal">
-  <form method="dialog" id="form-cita" class="modal__cuerpo">
-    <h2 class="titulo-seccion" id="titulo-modal">Nueva cita</h2>
-    <input type="hidden" name="id">
-    <div class="rejilla-campos">
-      <label class="campo-grupo">Fecha<input class="campo" type="date" name="fecha" required></label>
-      <label class="campo-grupo">Hora<input class="campo" type="time" name="hora" required></label>
-      <label class="campo-grupo campo-grupo--ancho">Servicio
-        <select class="campo" name="servicioId" id="select-servicio" required></select></label>
-      <label class="campo-grupo">Duración (min)<input class="campo" type="number" name="duracion" min="5" step="5" required></label>
-      <label class="campo-grupo">Precio<input class="campo" type="number" name="precio" min="0" step="10" required></label>
-      <label class="campo-grupo">Clienta<input class="campo" name="cliente" placeholder="Nombre y apellido" required></label>
-      <label class="campo-grupo">Teléfono<input class="campo" name="telefono" inputmode="tel" placeholder="55 1234 5678"></label>
-      <label class="campo-grupo">Terapeuta
-        <select class="campo" name="terapeuta" id="select-terapeuta"></select></label>
-      <label class="campo-grupo">Estado
-        <select class="campo" name="estado">
-          <option value="pendiente">Pendiente</option>
-          <option value="confirmada">Confirmada</option>
-          <option value="completada">Completada</option>
-          <option value="cancelada">Cancelada</option>
-          <option value="ausente">No asistió</option>
-        </select></label>
-      <label class="campo-grupo campo-grupo--ancho">Notas
-        <textarea class="campo campo--area" name="notas" rows="2" placeholder="Alergias, preferencias, tratamiento previo…"></textarea></label>
-    </div>
-    <p class="aviso-conflicto" id="aviso-conflicto" hidden></p>
-    <div class="modal__pie">
-      <button class="boton boton--fino" value="cancelar" formnovalidate>Cancelar</button>
-      <button class="boton boton--oro" value="guardar" id="btn-guardar-cita">Guardar cita</button>
-    </div>
-  </form>
-</dialog>
+<!-- ═══════════════ Pie ═══════════════ -->
+<footer class="pie">
+  <div class="pie__cuerpo">
+    <img src="assets/img/logo-claro.svg" alt="Alma de Mar" class="pie__logo">
+    <nav class="pie__nav" aria-label="Pie de página">
+      <a href="#experiencia">El spa</a>
+      <a href="#servicios">Servicios</a>
+      <a href="#espacio">Galería</a>
+      <a href="#contacto">Contacto</a>
+    </nav>
+  </div>
+  <div class="pie__legal">
+    <p>© <span id="anio"></span> Alma de Mar · Facial &amp; Wellness</p>
+    <a class="pie__admin" href="agenda.html">Acceso administración</a>
+  </div>
+</footer>
 
-<!-- ───────────── Modal: detalle ───────────── -->
-<dialog id="dlg-detalle" class="modal">
-  <div class="modal__cuerpo" id="detalle-cuerpo"></div>
-</dialog>
+<a class="wa-flotante" id="wa-flotante" href="#" target="_blank" rel="noopener" aria-label="Escribir por WhatsApp">
+  <svg viewBox="0 0 24 24" width="26" height="26" fill="currentColor" aria-hidden="true">
+    <path d="M12.04 2C6.58 2 2.13 6.45 2.13 11.91c0 1.75.46 3.45 1.32 4.95L2 22l5.25-1.38a9.9 9.9 0 0 0 4.79 1.22h.01c5.46 0 9.91-4.45 9.91-9.91S17.5 2 12.04 2Zm5.8 14.16c-.24.68-1.42 1.31-1.96 1.35-.5.04-.98.22-3.3-.69-2.78-1.1-4.55-3.94-4.69-4.12-.14-.18-1.12-1.49-1.12-2.84s.71-2.02.96-2.29c.25-.28.55-.34.73-.34.18 0 .37 0 .53.01.17.01.4-.06.62.48.24.57.8 1.97.87 2.11.07.14.12.31.02.49-.09.18-.14.29-.28.45-.14.16-.29.36-.42.48-.14.14-.28.29-.12.57.16.28.72 1.19 1.55 1.93 1.07.95 1.97 1.25 2.25 1.39.28.14.44.12.6-.07.17-.19.7-.81.88-1.09.18-.28.37-.23.62-.14.25.09 1.6.75 1.87.89.28.14.46.21.53.32.07.11.07.65-.17 1.33Z"/>
+  </svg>
+</a>
 
-<div id="avisos" class="avisos" aria-live="polite"></div>
-
-<script src="assets/js/app.js"></script>
+<script src="assets/js/config.js?v=3"></script>
+<script src="assets/js/api.js?v=3"></script>
+<script src="assets/js/landing.js?v=3"></script>
 </body>
 </html>

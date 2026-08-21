@@ -1,24 +1,12 @@
 /* ══════════════════════════════════════════════════════════
    ALMA DE MAR · Agenda de citas
-   Todo se guarda en el navegador (localStorage). Sin servidor.
+   Los datos viven en la base de datos del servidor, así que
+   son los mismos desde el celular y desde la computadora.
    ══════════════════════════════════════════════════════════ */
 
-const CLAVE = 'almademar.agenda.v1';
-
-const SERVICIOS_INICIALES = [
-  { id: 's1', nombre: 'Limpieza facial profunda',  duracion: 60, precio: 850 },
-  { id: 's2', nombre: 'Facial hidratante',          duracion: 50, precio: 750 },
-  { id: 's3', nombre: 'Peeling químico',            duracion: 45, precio: 1100 },
-  { id: 's4', nombre: 'Radiofrecuencia facial',     duracion: 40, precio: 950 },
-  { id: 's5', nombre: 'Masaje relajante',           duracion: 60, precio: 800 },
-  { id: 's6', nombre: 'Masaje descontracturante',   duracion: 60, precio: 900 },
-  { id: 's7', nombre: 'Ritual Alma de Mar',         duracion: 90, precio: 1500 },
-];
-
+/* Valores de respaldo por si la tabla de ajustes viniera incompleta. */
 const CONFIG_INICIAL = {
-  spa: 'Alma de Mar',
-  apertura: '09:00',
-  cierre: '19:00',
+  spa: window.ALMA.nombre,
   intervalo: 30,
   prefijo: '52',
   plantilla: 'Hola {cliente} ✨ Te confirmamos tu cita en {spa}: {servicio}, el {fecha} a las {hora}. ¡Te esperamos!',
@@ -32,35 +20,36 @@ const ESTADOS = {
   ausente:    'No asistió',
 };
 
-/* ───────────── Estado ───────────── */
-let datos = cargar();
+/* ───────────── Estado en memoria ─────────────
+   Es una copia de lo que hay en el servidor, para poder pintar sin ir a
+   la red en cada scroll. Cada cambio se manda primero y solo se refleja
+   aquí cuando el servidor lo confirma. */
+let datos = { citas: [], servicios: [], terapeutas: [], config: { ...CONFIG_INICIAL } };
 let fechaActiva = hoyISO();
 let inicioSemana = lunesDe(hoyISO());
 let vistaActiva = 'dia';
 
-function cargar() {
-  try {
-    const bruto = localStorage.getItem(CLAVE);
-    if (bruto) {
-      const d = JSON.parse(bruto);
-      return {
-        citas: d.citas || [],
-        servicios: d.servicios || SERVICIOS_INICIALES,
-        terapeutas: d.terapeutas || [],
-        config: { ...CONFIG_INICIAL, ...(d.config || {}) },
-      };
-    }
-  } catch (e) {
-    console.error('No se pudo leer la agenda guardada', e);
-  }
-  return { citas: [], servicios: [...SERVICIOS_INICIALES], terapeutas: [], config: { ...CONFIG_INICIAL } };
+async function traerDatos() {
+  const r = await API.datos();
+  datos = {
+    citas: r.citas,
+    servicios: r.servicios,
+    terapeutas: r.terapeutas,
+    config: { ...CONFIG_INICIAL, ...r.ajustes },
+  };
 }
 
-function guardar() {
+/* Envoltura de toda llamada que cambia algo: traduce los fallos del
+   servidor a un aviso entendible y saca al usuario si la sesión venció. */
+async function pedir(accion, exito) {
   try {
-    localStorage.setItem(CLAVE, JSON.stringify(datos));
+    const r = await accion();
+    if (exito) aviso(exito);
+    return r;
   } catch (e) {
-    aviso('⚠️ No se pudo guardar. Revisa el espacio del navegador.');
+    if (e.sesion === false) { Acceso.sesionCaducada(); return null; }
+    aviso('⚠️ ' + e.message);
+    return null;
   }
 }
 
@@ -101,6 +90,55 @@ function conflictoDe(cita) {
   });
 }
 
+/* ───────────── Horario de atención ─────────────
+   Los turnos de config.js mandan: fuera de ellos no se agenda.
+   getDay() da 0 para el domingo; la lista de config.js empieza en lunes. */
+
+const filaHorario = (iso) => window.ALMA.horario[(aDate(iso).getDay() + 6) % 7];
+
+function turnosDe(iso) {
+  const turnos = filaHorario(iso)?.turnos || [];
+  return turnos.map(([de, a]) => ({ ini: aMinutos(de), fin: aMinutos(a) }));
+}
+
+const abiertoEl = (iso) => turnosDe(iso).length > 0;
+const nombreDia = (iso) => (filaHorario(iso)?.dia || 'ese día').toLowerCase();
+
+/* «los lunes» pero «los domingos»: de lunes a viernes el plural no cambia. */
+function diaEnPlural(iso) {
+  const dia = nombreDia(iso);
+  return dia.endsWith('s') ? dia : `${dia}s`;
+}
+
+/* Una cita vale si cabe ENTERA en un turno: empezar dentro no basta si se sale. */
+function huecoDeHorario(fecha, hora, duracion) {
+  const ini = aMinutos(hora), fin = ini + Number(duracion);
+  return turnosDe(fecha).find(t => ini >= t.ini && fin <= t.fin) || null;
+}
+
+/* Devuelve null si la cita cabe; si no, la explicación para la clienta. */
+function motivoFueraDeHorario(fecha, hora, duracion) {
+  const turnos = turnosDe(fecha);
+  const dia = nombreDia(fecha);
+
+  if (!turnos.length) return `El spa cierra los ${diaEnPlural(fecha)}. Elige otro día.`;
+  if (huecoDeHorario(fecha, hora, duracion)) return null;
+
+  const texto = turnos.map(t => `${aHora(t.ini)}–${aHora(t.fin)}`).join(' y ');
+  const ini = aMinutos(hora), fin = ini + Number(duracion);
+  const empiezaDentro = turnos.some(t => ini >= t.ini && ini < t.fin);
+
+  return empiezaDentro
+    ? `La cita terminaría a las ${aHora(fin)} y para entonces el turno ya cerró. El ${dia} se atiende de ${texto}.`
+    : `Las ${hora} quedan fuera de horario. El ${dia} se atiende de ${texto}.`;
+}
+
+/* Primera hora libre para una cita nueva en ese día. */
+function horaPorDefecto(iso) {
+  const turnos = turnosDe(iso);
+  return turnos.length ? aHora(turnos[0].ini) : '11:00';
+}
+
 /* ───────────── Avisos ───────────── */
 function aviso(texto) {
   const cont = document.getElementById('avisos');
@@ -108,7 +146,7 @@ function aviso(texto) {
   el.className = 'aviso';
   el.textContent = texto;
   cont.appendChild(el);
-  setTimeout(() => el.remove(), 3200);
+  setTimeout(() => el.remove(), 3600);
 }
 
 /* ───────────── Vista: DÍA ───────────── */
@@ -126,45 +164,64 @@ function pintarDia() {
      <div><strong>${Math.floor(minutos / 60)}h ${minutos % 60}m</strong> en cabina</div>`;
 
   const paso = Number(datos.config.intervalo);
-  let ini = aMinutos(datos.config.apertura);
-  let fin = aMinutos(datos.config.cierre);
-  citas.forEach(c => {                       // amplía el rango si hay citas fuera de horario
-    ini = Math.min(ini, aMinutos(c.hora));
-    fin = Math.max(fin, aMinutos(c.hora) + Number(c.duracion));
-  });
-  ini = Math.floor(ini / paso) * paso;
-
+  const turnos = turnosDe(fechaActiva);
   const cont = document.getElementById('agenda-dia');
   cont.innerHTML = '';
 
-  for (let m = ini; m < fin; m += paso) {
-    const franja = document.createElement('div');
-    franja.className = 'franja' + (m % 60 === 0 ? ' franja--hora-en-punto' : '');
-    franja.innerHTML = `<div class="franja__hora">${aHora(m)}</div>`;
+  /* Citas que no caben en ningún turno: normalmente son de antes de fijar el
+     horario. No se pierden de vista, pero se muestran aparte y señaladas. */
+  const dentro = citas.filter(c => huecoDeHorario(fechaActiva, c.hora, c.duracion));
+  const fuera  = citas.filter(c => !huecoDeHorario(fechaActiva, c.hora, c.duracion));
 
-    const cuerpo = document.createElement('div');
-    cuerpo.className = 'franja__contenido';
+  if (!turnos.length) {
+    cont.insertAdjacentHTML('beforeend',
+      `<p class="dia-cerrado">Cerrado los ${diaEnPlural(fechaActiva)}<span>No se pueden agendar citas este día</span></p>`);
+  }
 
-    const empiezan = citas.filter(c => { const s = aMinutos(c.hora); return s >= m && s < m + paso; });
-    const siguen = citas.filter(c => { const s = aMinutos(c.hora); return s < m && s + Number(c.duracion) > m; });
-
-    empiezan.forEach(c => cuerpo.appendChild(tarjetaCita(c)));
-    siguen.forEach(c => {
-      const p = document.createElement('p');
-      p.className = 'continua';
-      p.textContent = `… continúa: ${c.cliente}`;
-      cuerpo.appendChild(p);
-    });
-
-    if (!empiezan.length && !siguen.length) {
-      const btn = document.createElement('button');
-      btn.className = 'libre';
-      btn.textContent = 'Libre · agendar aquí';
-      btn.addEventListener('click', () => abrirCita(null, { fecha: fechaActiva, hora: aHora(m) }));
-      cuerpo.appendChild(btn);
+  turnos.forEach((turno, i) => {
+    // Entre turno y turno, el descanso se ve como tal en vez de desaparecer
+    if (i > 0) {
+      cont.insertAdjacentHTML('beforeend',
+        `<div class="descanso">Cerrado · ${aHora(turnos[i - 1].fin)} – ${aHora(turno.ini)}</div>`);
     }
-    franja.appendChild(cuerpo);
-    cont.appendChild(franja);
+
+    for (let m = turno.ini; m < turno.fin; m += paso) {
+      const franja = document.createElement('div');
+      franja.className = 'franja' + (m % 60 === 0 ? ' franja--hora-en-punto' : '');
+      franja.innerHTML = `<div class="franja__hora">${aHora(m)}</div>`;
+
+      const cuerpo = document.createElement('div');
+      cuerpo.className = 'franja__contenido';
+
+      const empiezan = dentro.filter(c => { const s = aMinutos(c.hora); return s >= m && s < m + paso; });
+      const siguen = citas.filter(c => { const s = aMinutos(c.hora); return s < m && s + Number(c.duracion) > m; });
+
+      empiezan.forEach(c => cuerpo.appendChild(tarjetaCita(c)));
+      siguen.forEach(c => {
+        const p = document.createElement('p');
+        p.className = 'continua';
+        p.textContent = `… continúa: ${c.cliente}`;
+        cuerpo.appendChild(p);
+      });
+
+      if (!empiezan.length && !siguen.length) {
+        const btn = document.createElement('button');
+        btn.className = 'libre';
+        btn.textContent = 'Libre · agendar aquí';
+        btn.addEventListener('click', () => abrirCita(null, { fecha: fechaActiva, hora: aHora(m) }));
+        cuerpo.appendChild(btn);
+      }
+      franja.appendChild(cuerpo);
+      cont.appendChild(franja);
+    }
+  });
+
+  if (fuera.length) {
+    const bloque = document.createElement('div');
+    bloque.className = 'fuera-horario';
+    bloque.innerHTML = `<p class="fuera-horario__titulo">Fuera del horario de atención</p>`;
+    fuera.forEach(c => bloque.appendChild(tarjetaCita(c)));
+    cont.appendChild(bloque);
   }
 }
 
@@ -201,14 +258,17 @@ function pintarSemana() {
     ingresos += activas.reduce((t, c) => t + Number(c.precio || 0), 0);
 
     const col = document.createElement('div');
-    col.className = 'dia-col' + (iso === hoyISO() ? ' dia-col--hoy' : '');
+    const abierto = abiertoEl(iso);
+    col.className = 'dia-col'
+      + (iso === hoyISO() ? ' dia-col--hoy' : '')
+      + (abierto ? '' : ' dia-col--cerrado');
     col.innerHTML = `<div class="dia-col__cabecera">
         <div class="dia-col__nombre">${aDate(iso).toLocaleDateString('es-MX', { weekday: 'short' }).replace('.', '')}</div>
         <div class="dia-col__numero">${aDate(iso).getDate()}</div>
       </div>` +
       (citas.length
         ? citas.map(c => `<div class="mini-cita mini-cita--${c.estado}">${c.hora} · ${escapar(c.cliente)}</div>`).join('')
-        : '<div class="dia-col__vacio">Sin citas</div>');
+        : `<div class="dia-col__vacio">${abierto ? 'Sin citas' : 'Cerrado'}</div>`);
 
     col.addEventListener('click', () => { fechaActiva = iso; cambiarVista('dia'); });
     rejilla.appendChild(col);
@@ -264,11 +324,25 @@ function pintarClientes() {
   });
 }
 
-/* ───────────── Vista: AJUSTES ───────────── */
+/* ───────────── Vista: AJUSTES ─────────────
+   El horario se muestra, no se edita: se cambia en config.js para que
+   la agenda y la página pública no puedan contradecirse. */
+function pintarHorario() {
+  const hoyIdx = (new Date().getDay() + 6) % 7;
+  document.getElementById('horario-agenda').innerHTML = window.ALMA.horario.map((h, i) => {
+    const turnos = h.turnos || [];
+    const texto = turnos.length
+      ? turnos.map(([de, a]) => `${de} – ${a}`).join('  ·  ')
+      : 'Cerrado';
+    return `<div class="fila-horario${i === hoyIdx ? ' fila-horario--hoy' : ''}${turnos.length ? '' : ' fila-horario--cerrado'}">
+      <span>${escapar(h.dia)}</span><span>${escapar(texto)}</span>
+    </div>`;
+  }).join('');
+}
+
 function pintarAjustes() {
   const cfg = datos.config;
-  document.getElementById('cfg-apertura').value  = cfg.apertura;
-  document.getElementById('cfg-cierre').value    = cfg.cierre;
+  pintarHorario();
   document.getElementById('cfg-intervalo').value = cfg.intervalo;
   document.getElementById('cfg-prefijo').value   = cfg.prefijo;
   document.getElementById('cfg-plantilla').value = cfg.plantilla;
@@ -278,13 +352,15 @@ function pintarAjustes() {
   datos.servicios.forEach(s => {
     const fila = document.createElement('div');
     fila.className = 'fila';
-    fila.innerHTML = `<span class="fila__nombre">${escapar(s.nombre)}</span>
+    fila.innerHTML = `<span class="fila__nombre">${escapar(s.nombre)}${s.tipo ? ` <em class="fila__tipo">${escapar(s.tipo)}</em>` : ''}</span>
       <span class="fila__meta">${s.duracion} min · ${dinero(s.precio)}</span>
-      <button class="quitar" title="Eliminar servicio">×</button>`;
-    fila.querySelector('.quitar').addEventListener('click', () => {
-      if (!confirm(`¿Eliminar el servicio "${s.nombre}"? Las citas ya creadas no se modifican.`)) return;
+      <button class="quitar" title="Archivar servicio">×</button>`;
+    fila.querySelector('.quitar').addEventListener('click', async () => {
+      if (!confirm(`¿Quitar "${s.nombre}" de la carta? Las citas que ya lo usaron no se modifican.`)) return;
+      const r = await pedir(() => API.borrarServicio(s.id), 'Servicio archivado');
+      if (!r) return;
       datos.servicios = datos.servicios.filter(x => x.id !== s.id);
-      guardar(); pintarAjustes(); aviso('Servicio eliminado');
+      pintarAjustes();
     });
     ls.appendChild(fila);
   });
@@ -295,9 +371,11 @@ function pintarAjustes() {
     const et = document.createElement('span');
     et.className = 'etiqueta';
     et.innerHTML = `${escapar(t)}<button class="quitar" title="Quitar">×</button>`;
-    et.querySelector('.quitar').addEventListener('click', () => {
+    et.querySelector('.quitar').addEventListener('click', async () => {
+      const r = await pedir(() => API.borrarTerapeuta(t), 'Terapeuta eliminada');
+      if (!r) return;
       datos.terapeutas = datos.terapeutas.filter(x => x !== t);
-      guardar(); pintarAjustes(); aviso('Terapeuta eliminada');
+      pintarAjustes();
     });
     lt.appendChild(et);
   });
@@ -307,9 +385,31 @@ function pintarAjustes() {
 const dlgCita  = document.getElementById('dlg-cita');
 const formCita = document.getElementById('form-cita');
 
+/* Las opciones salen agrupadas por categoría, en el mismo orden que la carta.
+   Lo que se añade a mano desde Ajustes cae en un grupo aparte al final. */
+function opcionesDeServicio() {
+  const etiqueta = (s) =>
+    `<option value="${s.id}">${escapar(s.nombre)}${s.tipo ? ' · ' + escapar(s.tipo) : ''} · ${s.duracion} min</option>`;
+
+  const grupos = [];
+  const agrupados = new Set();
+
+  window.ALMA.categorias.forEach(cat => {
+    const suyos = datos.servicios.filter(s => s.categoria === cat.id);
+    if (!suyos.length) return;
+    suyos.forEach(s => agrupados.add(s.id));
+    grupos.push(`<optgroup label="${escapar(cat.titulo)}">${suyos.map(etiqueta).join('')}</optgroup>`);
+  });
+
+  const sueltos = datos.servicios.filter(s => !agrupados.has(s.id));
+  if (sueltos.length) grupos.push(`<optgroup label="Otros">${sueltos.map(etiqueta).join('')}</optgroup>`);
+
+  return grupos.join('');
+}
+
 function rellenarSelectores(servicioId, terapeuta) {
   const ss = document.getElementById('select-servicio');
-  ss.innerHTML = datos.servicios.map(s => `<option value="${s.id}">${escapar(s.nombre)} · ${s.duracion} min</option>`).join('');
+  ss.innerHTML = opcionesDeServicio();
   if (servicioId && servicioPorId(servicioId)) ss.value = servicioId;
 
   const st = document.getElementById('select-terapeuta');
@@ -330,7 +430,7 @@ function abrirCita(id, previo = {}) {
   const f = formCita.elements;
   f.id.value        = cita?.id || '';
   f.fecha.value     = cita?.fecha || previo.fecha || fechaActiva;
-  f.hora.value      = cita?.hora || previo.hora || datos.config.apertura;
+  f.hora.value      = cita?.hora || previo.hora || horaPorDefecto(f.fecha.value);
   f.cliente.value   = cita?.cliente || '';
   f.telefono.value  = cita?.telefono || '';
   f.notas.value     = cita?.notas || '';
@@ -350,12 +450,17 @@ document.getElementById('select-servicio').addEventListener('change', (e) => {
   formCita.elements.precio.value   = s.precio;
 });
 
-formCita.addEventListener('submit', (e) => {
+formCita.addEventListener('submit', async (e) => {
   if (e.submitter && e.submitter.value === 'cancelar') return;
+
+  /* Se corta el envío del <dialog> siempre: la modal solo se cierra cuando
+     el servidor confirma que la cita quedó guardada. */
+  e.preventDefault();
+
   const f = formCita.elements;
   const serv = servicioPorId(f.servicioId.value);
   const cita = {
-    id: f.id.value || 'c' + Date.now().toString(36) + Math.random().toString(36).slice(2, 6),
+    id: f.id.value || '',
     fecha: f.fecha.value,
     hora: f.hora.value,
     duracion: Number(f.duracion.value),
@@ -369,22 +474,39 @@ formCita.addEventListener('submit', (e) => {
     estado: f.estado.value,
   };
 
+  const avisoEl = document.getElementById('aviso-conflicto');
+
+  /* El horario de atención no se negocia: aquí no hay «guardar igualmente».
+     Si necesitas una excepción, cámbiala en `horario` de assets/js/config.js. */
+  const fueraDeHorario = motivoFueraDeHorario(cita.fecha, cita.hora, cita.duracion);
+  if (fueraDeHorario) {
+    avisoEl.textContent = fueraDeHorario;
+    avisoEl.hidden = false;
+    return;
+  }
+
   const choque = conflictoDe(cita);
   if (choque && !formCita.dataset.conflictoAceptado) {
-    e.preventDefault();
-    const el = document.getElementById('aviso-conflicto');
-    el.textContent = `Se cruza con ${choque.cliente} (${choque.hora}, ${choque.servicioNombre}${choque.terapeuta ? ', ' + choque.terapeuta : ''}). Pulsa «Guardar cita» otra vez para agendarla igualmente.`;
-    el.hidden = false;
+    avisoEl.textContent = `Se cruza con ${choque.cliente} (${choque.hora}, ${choque.servicioNombre}${choque.terapeuta ? ', ' + choque.terapeuta : ''}). Pulsa «Guardar cita» otra vez para agendarla igualmente.`;
+    avisoEl.hidden = false;
     formCita.dataset.conflictoAceptado = '1';
     return;
   }
 
-  const i = datos.citas.findIndex(c => c.id === cita.id);
-  if (i >= 0) datos.citas[i] = cita; else datos.citas.push(cita);
-  guardar();
-  fechaActiva = cita.fecha;
+  const boton = document.getElementById('btn-guardar-cita');
+  boton.disabled = true;
+  const editando = Boolean(cita.id);
+
+  const r = await pedir(() => API.guardarCita(cita), editando ? 'Cita actualizada' : 'Cita agendada ✨');
+  boton.disabled = false;
+  if (!r) return;
+
+  const i = datos.citas.findIndex(c => c.id === r.cita.id);
+  if (i >= 0) datos.citas[i] = r.cita; else datos.citas.push(r.cita);
+
+  dlgCita.close();
+  fechaActiva = r.cita.fecha;
   refrescar();
-  aviso(i >= 0 ? 'Cita actualizada' : 'Cita agendada ✨');
 });
 
 /* ───────────── Modal: detalle ───────────── */
@@ -420,21 +542,32 @@ function verDetalle(id) {
   dlgDetalle.showModal();
 }
 
-function accionDetalle(accion, c) {
+async function accionDetalle(accion, c) {
   if (accion === 'cerrar')   { dlgDetalle.close(); return; }
   if (accion === 'whatsapp') { abrirWhatsApp(c); return; }
   if (accion === 'editar')   { dlgDetalle.close(); abrirCita(c.id); return; }
 
   if (accion === 'eliminar') {
     if (!confirm(`¿Eliminar la cita de ${c.cliente} del ${fechaLarga(c.fecha)}?`)) return;
+    const r = await pedir(() => API.borrarCita(c.id), 'Cita eliminada');
+    if (!r) return;
     datos.citas = datos.citas.filter(x => x.id !== c.id);
-    guardar(); dlgDetalle.close(); refrescar(); aviso('Cita eliminada');
+    dlgDetalle.close();
+    refrescar();
     return;
   }
+
   if (accion === 'confirmar' || accion === 'completar') {
-    c.estado = accion === 'confirmar' ? 'confirmada' : 'completada';
-    guardar(); dlgDetalle.close(); refrescar();
-    aviso(accion === 'confirmar' ? 'Cita confirmada' : 'Cita completada');
+    const nuevo = accion === 'confirmar' ? 'confirmada' : 'completada';
+    const r = await pedir(
+      () => API.guardarCita({ ...c, estado: nuevo }),
+      accion === 'confirmar' ? 'Cita confirmada' : 'Cita completada'
+    );
+    if (!r) return;
+    const i = datos.citas.findIndex(x => x.id === c.id);
+    if (i >= 0) datos.citas[i] = r.cita;
+    dlgDetalle.close();
+    refrescar();
   }
 }
 
@@ -455,7 +588,9 @@ function abrirWhatsApp(c) {
   window.open(`https://wa.me/${tel}?text=${encodeURIComponent(mensaje)}`, '_blank', 'noopener');
 }
 
-/* ───────────── Copia de seguridad ───────────── */
+/* ───────────── Copia de seguridad ─────────────
+   Ahora los datos están en el servidor, así que esto ya no es la única red
+   de seguridad: es la copia que te llevas fuera por si el servidor falla. */
 function exportar() {
   const blob = new Blob([JSON.stringify(datos, null, 2)], { type: 'application/json' });
   const a = document.createElement('a');
@@ -468,21 +603,26 @@ function exportar() {
 
 function importar(archivo) {
   const lector = new FileReader();
-  lector.onload = () => {
+  lector.onload = async () => {
+    let d;
     try {
-      const d = JSON.parse(lector.result);
+      d = JSON.parse(lector.result);
       if (!Array.isArray(d.citas)) throw new Error('formato');
-      if (!confirm(`Se restaurarán ${d.citas.length} citas y se reemplazará la agenda actual. ¿Continuar?`)) return;
-      datos = {
-        citas: d.citas,
-        servicios: d.servicios || SERVICIOS_INICIALES,
-        terapeutas: d.terapeutas || [],
-        config: { ...CONFIG_INICIAL, ...(d.config || {}) },
-      };
-      guardar(); refrescar(); pintarAjustes(); aviso('Agenda restaurada');
-    } catch (e) {
+    } catch {
       aviso('El archivo no es una copia válida');
+      return;
     }
+
+    if (!confirm(`Se añadirán ${d.citas.length} citas a la agenda. Las que ya existan se actualizarán. ¿Continuar?`)) return;
+
+    let bien = 0, mal = 0;
+    for (const cita of d.citas) {
+      try { await API.guardarCita(cita); bien++; } catch { mal++; }
+    }
+    await traerDatos();
+    refrescar();
+    pintarAjustes();
+    aviso(mal ? `Restauradas ${bien} citas · ${mal} con error` : `Restauradas ${bien} citas`);
   };
   lector.readAsText(archivo);
 }
@@ -510,7 +650,7 @@ function escapar(t) {
     ({ '&': '&amp;', '<': '&lt;', '>': '&gt;', '"': '&quot;', "'": '&#39;' })[ch]);
 }
 
-/* ───────────── Arranque ───────────── */
+/* ───────────── Cableado de la interfaz ───────────── */
 document.querySelectorAll('.pestana').forEach(b =>
   b.addEventListener('click', () => cambiarVista(b.dataset.vista)));
 
@@ -524,30 +664,39 @@ document.getElementById('semana-siguiente').addEventListener('click', () => { in
 document.getElementById('btn-semana-actual').addEventListener('click', () => { inicioSemana = lunesDe(hoyISO()); pintarSemana(); });
 document.getElementById('buscador').addEventListener('input', pintarClientes);
 
-['apertura', 'cierre', 'intervalo', 'prefijo', 'plantilla'].forEach(k => {
-  document.getElementById('cfg-' + k).addEventListener('change', (e) => {
-    datos.config[k] = k === 'intervalo' ? Number(e.target.value) : e.target.value;
-    guardar(); aviso('Ajuste guardado');
+['intervalo', 'prefijo', 'plantilla'].forEach(k => {
+  document.getElementById('cfg-' + k).addEventListener('change', async (e) => {
+    const valor = k === 'intervalo' ? Number(e.target.value) : e.target.value;
+    const r = await pedir(() => API.guardarAjustes({ [k]: valor }), 'Ajuste guardado');
+    if (!r) return;
+    datos.config = { ...CONFIG_INICIAL, ...r.ajustes };
+    if (k === 'intervalo') refrescar();
   });
 });
 
-document.getElementById('form-servicio').addEventListener('submit', (e) => {
+document.getElementById('form-servicio').addEventListener('submit', async (e) => {
   e.preventDefault();
   const f = e.target.elements;
-  datos.servicios.push({
-    id: 's' + Date.now().toString(36),
+  const r = await pedir(() => API.guardarServicio({
     nombre: f.nombre.value.trim(),
     duracion: Number(f.duracion.value),
     precio: Number(f.precio.value),
-  });
-  guardar(); e.target.reset(); pintarAjustes(); aviso('Servicio añadido');
+  }), 'Servicio añadido');
+  if (!r) return;
+  datos.servicios.push(r.servicio);
+  e.target.reset();
+  pintarAjustes();
 });
 
-document.getElementById('form-terapeuta').addEventListener('submit', (e) => {
+document.getElementById('form-terapeuta').addEventListener('submit', async (e) => {
   e.preventDefault();
   const nombre = e.target.elements.nombre.value.trim();
-  if (nombre && !datos.terapeutas.includes(nombre)) datos.terapeutas.push(nombre);
-  guardar(); e.target.reset(); pintarAjustes(); aviso('Terapeuta añadida');
+  if (!nombre) return;
+  const r = await pedir(() => API.guardarTerapeuta(nombre), 'Terapeuta añadida');
+  if (!r) return;
+  if (!datos.terapeutas.includes(nombre)) datos.terapeutas.push(nombre);
+  e.target.reset();
+  pintarAjustes();
 });
 
 document.getElementById('btn-exportar').addEventListener('click', exportar);
@@ -556,13 +705,69 @@ document.getElementById('archivo-importar').addEventListener('change', (e) => {
   if (e.target.files[0]) importar(e.target.files[0]);
   e.target.value = '';
 });
-document.getElementById('btn-borrar').addEventListener('click', () => {
-  if (!confirm('Se borrarán TODAS las citas, servicios y ajustes de este navegador. ¿Seguro?')) return;
-  if (!confirm('Última confirmación: esta acción no se puede deshacer. ¿Borrar todo?')) return;
-  localStorage.removeItem(CLAVE);
-  datos = cargar();
-  refrescar(); pintarAjustes(); aviso('Agenda vaciada');
+
+/* ───────────── Sesión ───────────── */
+document.getElementById('btn-salir').addEventListener('click', () => {
+  if (confirm('¿Cerrar sesión?')) Acceso.cerrarSesion();
 });
 
-pintarAjustes();
-cambiarVista('dia');
+document.getElementById('form-clave').addEventListener('submit', async (e) => {
+  e.preventDefault();
+  const f = e.target.elements;
+  const salida = document.getElementById('clave-resultado');
+
+  const decir = (texto, ok) => {
+    salida.className = 'clave-resultado clave-resultado--' + (ok ? 'ok' : 'error');
+    salida.textContent = texto;
+    salida.hidden = false;
+  };
+
+  if (f.nueva.value !== f.repite.value) return decir('Las dos contraseñas nuevas no coinciden.', false);
+
+  try {
+    await Acceso.cambiarClave(f.actual.value, f.nueva.value);
+    e.target.reset();
+    decir('Contraseña cambiada. La próxima vez que entres, en cualquier dispositivo, usa la nueva.', true);
+    aviso('Contraseña cambiada');
+  } catch (err) {
+    if (err.sesion === false) { Acceso.sesionCaducada(); return; }
+    decir(err.message, false);
+  }
+});
+
+/* ───────────── Volver a la pestaña ─────────────
+   Ahora la agenda se comparte entre dispositivos: si agendaste algo desde el
+   celular, al volver a la computadora lo que hay en pantalla ya está viejo.
+   Al recuperar el foco se vuelve a preguntar al servidor. */
+let refrescando = false;
+
+document.addEventListener('visibilitychange', async () => {
+  if (document.hidden || refrescando) return;
+  if (document.getElementById('app').hidden) return;   // aún sin sesión
+  // Con una modal abierta no se toca nada: sería tirarle el formulario encima
+  if (dlgCita.open || dlgDetalle.open) return;
+
+  refrescando = true;
+  try {
+    await traerDatos();
+    refrescar();
+  } catch (e) {
+    if (e.sesion === false) Acceso.sesionCaducada();
+  } finally {
+    refrescando = false;
+  }
+});
+
+/* ───────────── Arranque ─────────────
+   Lo llama auth.js cuando el servidor confirma que hay sesión. */
+window.iniciarAgenda = async function iniciarAgenda() {
+  try {
+    await traerDatos();
+  } catch (e) {
+    if (e.sesion === false) { Acceso.sesionCaducada(); return; }
+    aviso('⚠️ No se pudieron cargar los datos: ' + e.message);
+    return;
+  }
+  pintarAjustes();
+  cambiarVista('dia');
+};
