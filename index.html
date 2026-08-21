@@ -1,0 +1,179 @@
+<!doctype html>
+<html lang="es">
+<head>
+<meta charset="utf-8">
+<meta name="viewport" content="width=device-width, initial-scale=1, viewport-fit=cover">
+<title>Agenda · Alma de Mar</title>
+<meta name="description" content="Agenda de citas de Alma de Mar · Facial &amp; Wellness">
+<meta name="theme-color" content="#182D45">
+<link rel="icon" href="assets/img/favicon.svg" type="image/svg+xml">
+<link rel="apple-touch-icon" href="assets/img/favicon.svg">
+<link rel="manifest" href="manifest.webmanifest">
+<link rel="preconnect" href="https://fonts.googleapis.com">
+<link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
+<link href="https://fonts.googleapis.com/css2?family=Josefin+Sans:wght@200;300;400&family=Jost:wght@300;400;500&display=swap" rel="stylesheet">
+<link rel="stylesheet" href="assets/css/estilos.css">
+</head>
+<body>
+
+<header class="cabecera">
+  <div class="cabecera__marca">
+    <img src="assets/img/logo.svg" alt="Alma de Mar · Facial & Wellness" class="logo">
+    <img src="assets/img/isotipo.svg" alt="Alma de Mar" class="logo logo--mini">
+  </div>
+
+  <nav class="pestanas" aria-label="Secciones">
+    <button class="pestana" data-vista="dia" aria-current="page">Día</button>
+    <button class="pestana" data-vista="semana">Semana</button>
+    <button class="pestana" data-vista="clientes">Clientes</button>
+    <button class="pestana" data-vista="ajustes">Ajustes</button>
+  </nav>
+
+  <button class="boton boton--oro" id="btn-nueva">+ Nueva cita</button>
+</header>
+
+<main class="contenido">
+
+  <!-- ───────────── DÍA ───────────── -->
+  <section class="vista" id="vista-dia">
+    <div class="barra-fecha">
+      <div class="nav-fecha">
+        <button class="icono" id="dia-anterior" aria-label="Día anterior">‹</button>
+        <input type="date" id="fecha-dia" aria-label="Fecha">
+        <button class="icono" id="dia-siguiente" aria-label="Día siguiente">›</button>
+        <button class="boton boton--fino" id="btn-hoy">Hoy</button>
+      </div>
+      <p class="titulo-fecha" id="titulo-dia"></p>
+      <div class="resumen" id="resumen-dia"></div>
+    </div>
+    <div id="agenda-dia" class="agenda"></div>
+  </section>
+
+  <!-- ───────────── SEMANA ───────────── -->
+  <section class="vista" id="vista-semana" hidden>
+    <div class="barra-fecha">
+      <div class="nav-fecha">
+        <button class="icono" id="semana-anterior" aria-label="Semana anterior">‹</button>
+        <button class="boton boton--fino" id="btn-semana-actual">Esta semana</button>
+        <button class="icono" id="semana-siguiente" aria-label="Semana siguiente">›</button>
+      </div>
+      <p class="titulo-fecha" id="titulo-semana"></p>
+      <div class="resumen" id="resumen-semana"></div>
+    </div>
+    <div id="rejilla-semana" class="semana"></div>
+  </section>
+
+  <!-- ───────────── CLIENTES ───────────── -->
+  <section class="vista" id="vista-clientes" hidden>
+    <div class="barra-fecha">
+      <p class="titulo-fecha">Clientas y citas</p>
+      <input type="search" id="buscador" class="campo campo--busqueda" placeholder="Buscar por nombre, teléfono o servicio…">
+    </div>
+    <div id="lista-clientes" class="tarjetas"></div>
+  </section>
+
+  <!-- ───────────── AJUSTES ───────────── -->
+  <section class="vista" id="vista-ajustes" hidden>
+    <div class="panel">
+      <h2 class="titulo-seccion">Horario del spa</h2>
+      <div class="rejilla-campos">
+        <label class="campo-grupo">Apertura
+          <input type="time" id="cfg-apertura" class="campo"></label>
+        <label class="campo-grupo">Cierre
+          <input type="time" id="cfg-cierre" class="campo"></label>
+        <label class="campo-grupo">Intervalo
+          <select id="cfg-intervalo" class="campo">
+            <option value="15">15 minutos</option>
+            <option value="30">30 minutos</option>
+            <option value="60">60 minutos</option>
+          </select></label>
+        <label class="campo-grupo">Prefijo país (WhatsApp)
+          <input type="text" id="cfg-prefijo" class="campo" placeholder="52"></label>
+      </div>
+    </div>
+
+    <div class="panel">
+      <h2 class="titulo-seccion">Servicios</h2>
+      <p class="ayuda">Al elegir un servicio en una cita se rellenan solos la duración y el precio.</p>
+      <div id="lista-servicios" class="filas"></div>
+      <form id="form-servicio" class="fila-alta">
+        <input class="campo" name="nombre" placeholder="Nombre del servicio" required>
+        <input class="campo campo--corto" name="duracion" type="number" min="5" step="5" placeholder="min" required>
+        <input class="campo campo--corto" name="precio" type="number" min="0" step="10" placeholder="$" required>
+        <button class="boton boton--fino" type="submit">Añadir</button>
+      </form>
+    </div>
+
+    <div class="panel">
+      <h2 class="titulo-seccion">Terapeutas / cabinas</h2>
+      <div id="lista-terapeutas" class="etiquetas"></div>
+      <form id="form-terapeuta" class="fila-alta">
+        <input class="campo" name="nombre" placeholder="Nombre" required>
+        <button class="boton boton--fino" type="submit">Añadir</button>
+      </form>
+    </div>
+
+    <div class="panel">
+      <h2 class="titulo-seccion">Mensaje de WhatsApp</h2>
+      <p class="ayuda">Etiquetas disponibles: <code>{cliente}</code> <code>{servicio}</code> <code>{fecha}</code> <code>{hora}</code> <code>{spa}</code></p>
+      <textarea id="cfg-plantilla" class="campo campo--area" rows="5"></textarea>
+    </div>
+
+    <div class="panel panel--aviso">
+      <h2 class="titulo-seccion">Copia de seguridad</h2>
+      <p class="ayuda"><strong>Importante:</strong> las citas se guardan en este navegador y en este dispositivo. Si borras los datos del navegador o cambias de equipo, se pierden. Descarga una copia cada semana.</p>
+      <div class="fila-alta">
+        <button class="boton boton--fino" id="btn-exportar">Descargar copia</button>
+        <button class="boton boton--fino" id="btn-importar">Restaurar copia</button>
+        <input type="file" id="archivo-importar" accept="application/json" hidden>
+        <button class="boton boton--fino boton--peligro" id="btn-borrar">Borrar todo</button>
+      </div>
+    </div>
+  </section>
+</main>
+
+<!-- ───────────── Modal: alta / edición ───────────── -->
+<dialog id="dlg-cita" class="modal">
+  <form method="dialog" id="form-cita" class="modal__cuerpo">
+    <h2 class="titulo-seccion" id="titulo-modal">Nueva cita</h2>
+    <input type="hidden" name="id">
+    <div class="rejilla-campos">
+      <label class="campo-grupo">Fecha<input class="campo" type="date" name="fecha" required></label>
+      <label class="campo-grupo">Hora<input class="campo" type="time" name="hora" required></label>
+      <label class="campo-grupo campo-grupo--ancho">Servicio
+        <select class="campo" name="servicioId" id="select-servicio" required></select></label>
+      <label class="campo-grupo">Duración (min)<input class="campo" type="number" name="duracion" min="5" step="5" required></label>
+      <label class="campo-grupo">Precio<input class="campo" type="number" name="precio" min="0" step="10" required></label>
+      <label class="campo-grupo">Clienta<input class="campo" name="cliente" placeholder="Nombre y apellido" required></label>
+      <label class="campo-grupo">Teléfono<input class="campo" name="telefono" inputmode="tel" placeholder="55 1234 5678"></label>
+      <label class="campo-grupo">Terapeuta
+        <select class="campo" name="terapeuta" id="select-terapeuta"></select></label>
+      <label class="campo-grupo">Estado
+        <select class="campo" name="estado">
+          <option value="pendiente">Pendiente</option>
+          <option value="confirmada">Confirmada</option>
+          <option value="completada">Completada</option>
+          <option value="cancelada">Cancelada</option>
+          <option value="ausente">No asistió</option>
+        </select></label>
+      <label class="campo-grupo campo-grupo--ancho">Notas
+        <textarea class="campo campo--area" name="notas" rows="2" placeholder="Alergias, preferencias, tratamiento previo…"></textarea></label>
+    </div>
+    <p class="aviso-conflicto" id="aviso-conflicto" hidden></p>
+    <div class="modal__pie">
+      <button class="boton boton--fino" value="cancelar" formnovalidate>Cancelar</button>
+      <button class="boton boton--oro" value="guardar" id="btn-guardar-cita">Guardar cita</button>
+    </div>
+  </form>
+</dialog>
+
+<!-- ───────────── Modal: detalle ───────────── -->
+<dialog id="dlg-detalle" class="modal">
+  <div class="modal__cuerpo" id="detalle-cuerpo"></div>
+</dialog>
+
+<div id="avisos" class="avisos" aria-live="polite"></div>
+
+<script src="assets/js/app.js"></script>
+</body>
+</html>

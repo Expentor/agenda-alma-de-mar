@@ -1,0 +1,13 @@
+{
+  "name": "Agenda · Alma de Mar",
+  "short_name": "Agenda ADM",
+  "description": "Agenda de citas de Alma de Mar · Facial & Wellness",
+  "start_url": "./index.html",
+  "scope": "./",
+  "display": "standalone",
+  "background_color": "#F7F3EB",
+  "theme_color": "#182D45",
+  "icons": [
+    { "src": "assets/img/favicon.svg", "sizes": "any", "type": "image/svg+xml", "purpose": "any" }
+  ]
+}
