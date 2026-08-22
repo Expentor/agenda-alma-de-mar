@@ -31,3 +31,18 @@
 
 # El listado de carpetas no aporta nada y enseña de más
 Options -Indexes
+
+# ───────────── Carpetas y archivos que nunca deben servirse ─────────────
+# Si el sitio se publica clonando el repositorio, la carpeta .git queda dentro
+# del servidor. Sin esto, cualquiera podría descargarse el historial completo
+# del proyecto desde el navegador.
+RedirectMatch 404 /\.git
+<FilesMatch "^(\.gitignore|\.htaccess|composer\.(json|lock)|.*\.md|.*\.sql)$">
+  <IfModule mod_authz_core.c>
+    Require all denied
+  </IfModule>
+  <IfModule !mod_authz_core.c>
+    Order allow,deny
+    Deny from all
+  </IfModule>
+</FilesMatch>

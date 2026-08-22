@@ -38,8 +38,8 @@ function cartaInicial(): array {
 /* ───────────── Procesar el formulario ───────────── */
 if ($_SERVER['REQUEST_METHOD'] === 'POST' && !$yaInstalado) {
 
-    $raizUsuario = trim((string) ($_POST['raiz_usuario'] ?? 'root'));
-    $raizClave   = (string) ($_POST['raiz_clave'] ?? '');
+    $bdUsuarioForm = trim((string) ($_POST['raiz_usuario'] ?? 'root'));
+    $bdClaveForm   = (string) ($_POST['raiz_clave'] ?? '');
     $host        = trim((string) ($_POST['host'] ?? 'localhost')) ?: 'localhost';
     $baseNombre  = preg_replace('/[^a-zA-Z0-9_]/', '', (string) ($_POST['base'] ?? 'alma_de_mar')) ?: 'alma_de_mar';
 
@@ -63,29 +63,49 @@ if ($_SERVER['REQUEST_METHOD'] === 'POST' && !$yaInstalado) {
 
     if (!$errores) {
         try {
-            $raiz = new PDO("mysql:host={$host};charset=utf8mb4", $raizUsuario, $raizClave, [
+            $opcionesPDO = [
                 PDO::ATTR_ERRMODE => PDO::ERRMODE_EXCEPTION,
                 PDO::ATTR_DEFAULT_FETCH_MODE => PDO::FETCH_ASSOC,
-            ]);
+            ];
 
-            // 1. Base de datos
-            $raiz->exec("CREATE DATABASE IF NOT EXISTS `{$baseNombre}`
-                         CHARACTER SET utf8mb4 COLLATE utf8mb4_unicode_ci");
-            $resumen[] = "Base de datos «{$baseNombre}» lista.";
+            /* Hay dos escenarios y el instalador se adapta solo:
 
-            // 2. Usuario propio de la aplicación, con contraseña generada al azar.
-            //    Nunca se usa root para el día a día: si algo se filtra, ese
-            //    usuario solo puede tocar esta base y nada más del servidor.
-            $bdUsuario = 'alma_agenda';
-            $bdClave   = bin2hex(random_bytes(18));
-            $raiz->exec("CREATE USER IF NOT EXISTS '{$bdUsuario}'@'{$host}' IDENTIFIED BY " . $raiz->quote($bdClave));
-            $raiz->exec("ALTER USER '{$bdUsuario}'@'{$host}' IDENTIFIED BY " . $raiz->quote($bdClave));
-            $raiz->exec("GRANT SELECT, INSERT, UPDATE, DELETE ON `{$baseNombre}`.* TO '{$bdUsuario}'@'{$host}'");
-            $raiz->exec('FLUSH PRIVILEGES');
-            $resumen[] = "Usuario de base de datos «{$bdUsuario}» creado con contraseña aleatoria.";
+               a) HOSTING COMPARTIDO (Hostinger y similares). La base y el
+                  usuario ya los creaste en el panel, y ese usuario NO tiene
+                  permiso para crear bases ni usuarios. Si conectamos directo
+                  a la base, es este caso: se usa tal cual y no se toca nada
+                  de administración.
 
-            // 3. Tablas
-            $raiz->exec("USE `{$baseNombre}`");
+               b) LOCAL (XAMPP con root). No existe la base todavía, así que
+                  se crea, y con ella un usuario propio de la aplicación con
+                  contraseña aleatoria, para no andar usando root a diario. */
+
+            try {
+                $raiz = new PDO(
+                    "mysql:host={$host};dbname={$baseNombre};charset=utf8mb4",
+                    $bdUsuarioForm, $bdClaveForm, $opcionesPDO
+                );
+                $bdUsuario = $bdUsuarioForm;
+                $bdClave   = $bdClaveForm;
+                $resumen[] = "Conectado a la base «{$baseNombre}» con el usuario «{$bdUsuario}».";
+            } catch (PDOException $noExiste) {
+                // No se pudo entrar a esa base: probamos como administrador
+                $raiz = new PDO("mysql:host={$host};charset=utf8mb4", $bdUsuarioForm, $bdClaveForm, $opcionesPDO);
+
+                $raiz->exec("CREATE DATABASE IF NOT EXISTS `{$baseNombre}`
+                             CHARACTER SET utf8mb4 COLLATE utf8mb4_unicode_ci");
+                $resumen[] = "Base de datos «{$baseNombre}» creada.";
+
+                $bdUsuario = 'alma_agenda';
+                $bdClave   = bin2hex(random_bytes(18));
+                $raiz->exec("CREATE USER IF NOT EXISTS '{$bdUsuario}'@'{$host}' IDENTIFIED BY " . $raiz->quote($bdClave));
+                $raiz->exec("ALTER USER '{$bdUsuario}'@'{$host}' IDENTIFIED BY " . $raiz->quote($bdClave));
+                $raiz->exec("GRANT SELECT, INSERT, UPDATE, DELETE ON `{$baseNombre}`.* TO '{$bdUsuario}'@'{$host}'");
+                $raiz->exec('FLUSH PRIVILEGES');
+                $resumen[] = "Usuario de base de datos «{$bdUsuario}» creado con contraseña aleatoria.";
+
+                $raiz->exec("USE `{$baseNombre}`");
+            }
             $sql = file_get_contents(__DIR__ . '/sql/esquema.sql');
             if ($sql === false) throw new RuntimeException('No se encontró sql/esquema.sql');
 
@@ -234,21 +254,25 @@ if ($_SERVER['REQUEST_METHOD'] === 'POST' && !$yaInstalado) {
 
     <div class="panel">
       <p class="paso">Paso 1 de 2</p>
-      <h2 class="titulo-seccion">Acceso a MySQL</h2>
+      <h2 class="titulo-seccion">Base de datos</h2>
       <p class="ayuda">
-        Los datos con los que entra el <em>administrador</em> de la base de datos.
-        En un XAMPP recién instalado es <code>root</code> sin contraseña.
-        Solo se usan ahora, para crear la base; no se guardan en ningún sitio.
+        <strong>Si estás en un hosting</strong> (Hostinger y similares): pon aquí los datos
+        de la base que creaste en el panel, tal cual, con su prefijo
+        (<code>u123456789_almademar</code>). El servidor es <code>localhost</code>.
+      </p>
+      <p class="ayuda">
+        <strong>Si estás en tu computadora con XAMPP</strong>: usuario <code>root</code>,
+        contraseña vacía, y el nombre que quieras para la base. Se creará sola.
       </p>
       <div class="rejilla-campos">
         <label class="campo-grupo">Servidor
           <input class="campo" name="host" value="localhost"></label>
-        <label class="campo-grupo">Usuario
-          <input class="campo" name="raiz_usuario" value="root"></label>
-        <label class="campo-grupo">Contraseña
-          <input class="campo" name="raiz_clave" type="password" placeholder="(vacía en XAMPP)"></label>
         <label class="campo-grupo">Nombre de la base
           <input class="campo" name="base" value="alma_de_mar"></label>
+        <label class="campo-grupo">Usuario de la base
+          <input class="campo" name="raiz_usuario" value="root" autocapitalize="none" spellcheck="false"></label>
+        <label class="campo-grupo">Contraseña de la base
+          <input class="campo" name="raiz_clave" type="password" placeholder="(vacía en XAMPP)"></label>
       </div>
     </div>
 
