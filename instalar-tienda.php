@@ -27,6 +27,11 @@ require_once __DIR__ . '/api/comun.php';
 require_once __DIR__ . '/api/catalogo.php';
 require_once __DIR__ . '/api/stripe.php';
 
+/* comun.php manda `Content-Type: application/json`, que es lo correcto para la
+   API pero no para esto, que escribe HTML. Con `nosniff` puesto el navegador no
+   adivina: sin esta línea, el instalador se ve como un muro de texto. */
+header('Content-Type: text/html; charset=utf-8');
+
 $resumen   = [];
 $errores   = [];
 $pideAdmin = false;
@@ -119,7 +124,7 @@ try {
         // ── 4. Stripe ──
         $resumen[] = stripeListo()
             ? 'Stripe configurado: la tienda ya puede cobrar.'
-            : 'Falta STRIPE_SECRETO en api/config.php. El catálogo y el carrito funcionan; el botón de pagar avisa de que no está listo.';
+            : 'Falta STRIPE_SECRETO: copia el archivo .env.ejemplo como .env y pon ahí tus llaves de Stripe. Mientras, el catálogo y el carrito funcionan, y el botón de pagar avisa de que no está listo.';
 
         $hecho = true;
     }
