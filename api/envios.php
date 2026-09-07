@@ -9,43 +9,54 @@
    casi siempre gana el volumétrico, así que las medidas
    importan tanto como la báscula.
 
-   TODO lo de este archivo son números que puedes cambiar.
-   Están puestos con tarifas públicas de guía prepagada
-   terrestre; cuando tengas tu cotización de paquetería,
-   sustitúyelos aquí y no hay que tocar nada más.
+   Los números están puestos con tarifas públicas de guía
+   prepagada terrestre. Cuando tengas tu cotización, NO los
+   cambies aquí: ponlos en el `.env` de la raíz. Este archivo
+   se actualiza con `git pull` y se llevaría tus cambios por
+   delante; el `.env` no, porque git ni lo ve.
+
+   Los pesos y medidas por categoría (`perfiles`) sí viven
+   aquí, porque son del producto y no del servidor. Cuando
+   peses una pieza real, corrígela en el panel: Tienda →
+   Editar → Peso y medidas, que manda sobre el perfil.
    ══════════════════════════════════════════════════════════ */
 
 declare(strict_types=1);
 
+require_once __DIR__ . '/entorno.php';
+
+/* Todos los números salen del .env de la raíz, con estos valores por defecto.
+   Se pone en el .env y no aquí porque el sitio se actualiza con `git pull`:
+   lo que edites dentro de este archivo se pierde en la siguiente subida. */
 function configEnvios(): array {
     return [
 
         /* Escalones de peso facturable → precio. Se cobra el primer escalón
            cuyo límite alcance el peso del paquete. */
         'escalones' => [
-            ['hasta_kg' => 1,  'precio' => 145.0],
-            ['hasta_kg' => 3,  'precio' => 155.0],
-            ['hasta_kg' => 5,  'precio' => 160.0],
-            ['hasta_kg' => 10, 'precio' => 172.0],
-            ['hasta_kg' => 15, 'precio' => 180.0],
-            ['hasta_kg' => 25, 'precio' => 202.0],
-            ['hasta_kg' => 35, 'precio' => 220.0],
+            ['hasta_kg' => 1,  'precio' => entorno('ENVIO_TARIFA_1KG',  145.0)],
+            ['hasta_kg' => 3,  'precio' => entorno('ENVIO_TARIFA_3KG',  155.0)],
+            ['hasta_kg' => 5,  'precio' => entorno('ENVIO_TARIFA_5KG',  160.0)],
+            ['hasta_kg' => 10, 'precio' => entorno('ENVIO_TARIFA_10KG', 172.0)],
+            ['hasta_kg' => 15, 'precio' => entorno('ENVIO_TARIFA_15KG', 180.0)],
+            ['hasta_kg' => 25, 'precio' => entorno('ENVIO_TARIFA_25KG', 202.0)],
+            ['hasta_kg' => 35, 'precio' => entorno('ENVIO_TARIFA_35KG', 220.0)],
         ],
 
         /* Arriba del último escalón: el precio de ese escalón más un cargo
            por cada kilo extra. Evita cotizar de menos un pedido enorme. */
-        'sobre_maximo_por_kg' => 12.0,
+        'sobre_maximo_por_kg' => entorno('ENVIO_POR_KG_EXTRA', 12.0),
 
         /* Divisor del peso volumétrico. La paquetería terrestre en México
            usa 5000: (largo × ancho × alto en cm) / 5000. */
-        'divisor_volumetrico' => 5000.0,
+        'divisor_volumetrico' => entorno('ENVIO_DIVISOR_VOLUMETRICO', 5000.0),
 
         /* Los frascos no se acomodan perfecto en la caja: hay paredes,
            burbuja y huecos. El volumen sumado se infla por este factor. */
-        'factor_empaque' => 1.35,
+        'factor_empaque' => entorno('ENVIO_FACTOR_EMPAQUE', 1.35),
 
         /* Peso de la caja, burbuja y relleno, en gramos. */
-        'tara_gramos' => 150,
+        'tara_gramos' => entorno('ENVIO_TARA_GRAMOS', 150),
 
         /* Perfiles por categoría: peso y medidas de UNA pieza ya empacada.
            Un producto solo necesita medidas propias si se sale del molde.
@@ -70,19 +81,21 @@ function configEnvios(): array {
         /* Destinos que la paquetería cobra aparte. Se compara por PREFIJO de
            código postal, así que '97' cubre todo Yucatán. Déjalo en 0 si tu
            tarifa acaba siendo plana a todo el país. */
-        'sobrecargo_zona_extendida' => 131.40,
-        'prefijos_zona_extendida'   => ['97', '98', '77', '24', '29', '30', '23', '22', '21', '88', '87'],
+        'sobrecargo_zona_extendida' => entorno('ENVIO_SOBRECARGO_ZONA', 131.40),
+        'prefijos_zona_extendida'   => array_filter(array_map('trim', explode(',',
+            entorno('ENVIO_PREFIJOS_ZONA', '97,98,77,24,29,30,23,22,21,88,87')))),
 
         /* Porcentaje que la paquetería suma cada mes sobre la tarifa. Ponlo
            en 0 si tu tarifa ya lo trae incluido. */
-        'sobrecargo_combustible_pct' => 0.0,
+        'sobrecargo_combustible_pct' => entorno('ENVIO_COMBUSTIBLE_PCT', 0.0),
 
         /* Días hábiles estimados de entrega. Se le enseña a la clienta. */
-        'dias_entrega' => ['min' => 3, 'max' => 7],
+        'dias_entrega' => ['min' => entorno('ENVIO_DIAS_MIN', 3), 'max' => entorno('ENVIO_DIAS_MAX', 7)],
 
         /* Recoger en el spa, sin costo. */
-        'recoger_activo'    => true,
-        'recoger_direccion' => 'Av. Fiestas de Mayo #18, Condominios Torres del Mar, Dep. 10F',
+        'recoger_activo'    => entorno('RECOGER_ACTIVO', true),
+        'recoger_direccion' => entorno('RECOGER_DIRECCION',
+            'Av. Fiestas de Mayo #18, Condominios Torres del Mar, Dep. 10F'),
     ];
 }
 

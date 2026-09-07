@@ -62,6 +62,7 @@ usuario de base de datos con contraseña aleatoria y el archivo `api/config.php`
 | Fugas de información | Los errores internos van al log del servidor; al navegador solo le llega una frase neutra. |
 | Base de datos | La aplicación entra con un usuario propio que solo puede leer y escribir en esta base, nunca con `root`. |
 | Contraseña de la base | En `api/config.php`, que está en `.gitignore` y que Apache no sirve (`api/.htaccess`). |
+| Llaves de Stripe | En el `.env`, que está en `.gitignore` y que Apache no sirve (`.htaccess`). Puede ponerse fuera de la raíz web, donde ningún servidor lo alcanza. |
 
 **Lo que falta y depende de ti:** cuando lo publiques en internet, **tiene que ser por
 HTTPS**. Sin HTTPS, la contraseña viaja en claro por la red. Está explicado en
@@ -118,12 +119,33 @@ toca los pedidos.
 
 ### Activar el cobro
 
-Las dos llaves de Stripe van en `api/config.php`, que no se sube a GitHub:
+Las llaves de Stripe y las tarifas de envío van en un archivo **`.env`**, que no
+se sube a git. Copia la plantilla y rellénala:
 
-```php
-const STRIPE_SECRETO = 'sk_live_...';   // Claves de API → Clave secreta
-const STRIPE_WEBHOOK = 'whsec_...';     // Webhooks → Clave de firma
+```bash
+cp .env.ejemplo .env
 ```
+
+```bash
+STRIPE_SECRETO=sk_live_...
+STRIPE_WEBHOOK=whsec_...
+```
+
+> **Por qué un `.env` y no dentro del código:** el sitio se actualiza con `git pull`.
+> Cualquier número que edites dentro de un `.php` se pierde en la siguiente
+> actualización. Lo que vive en el `.env` sobrevive, porque git ni lo ve.
+
+**Dónde ponerlo.** Se busca en dos sitios, por este orden:
+
+1. **Un nivel arriba de la raíz del sitio.** Si el sitio está en
+   `/home/uXXXX/public_html`, el archivo va en `/home/uXXXX/.env`. Es el sitio
+   seguro: está fuera de lo que el servidor web puede servir, pase lo que pase.
+2. **En la raíz**, junto a `index.html`. Más cómodo, pero ahí solo lo protege el
+   `.htaccess`.
+
+Usa el 1 si puedes. Si usas el 2, **comprueba que `https://tudominio.com/.env`
+responde 403 o 404**, nunca el texto del archivo. Si alguna vez ves su contenido,
+las llaves están expuestas: cámbialas en Stripe de inmediato.
 
 El webhook se da de alta en Stripe apuntando a
 `https://tudominio.com/api/webhook-stripe.php`, con el evento
@@ -138,10 +160,13 @@ avisa de que falta configurarlo.
 
 | Qué | Dónde |
 |---|---|
-| Tarifas de envío, zona extendida, días de entrega | `api/envios.php` |
+| Tarifas de envío, zona extendida, días de entrega | `.env` |
+| Dirección para recoger, o desactivarlo | `.env` |
 | Peso y medidas por tipo de producto | `api/envios.php` → `perfiles` |
 | Peso y medidas de una pieza concreta | En el panel: *Tienda → Editar* |
-| Dirección para recoger | `api/envios.php` → `recoger_direccion` |
+
+Todo lo del `.env` está listado y explicado en `.env.ejemplo`. Lo que no pongas usa
+el valor por defecto que trae el código.
 
 > **Las tarifas y los pesos que trae son estimaciones**, puestas con precios públicos de
 > guía prepagada terrestre. Pesa y mide unas cuantas piezas reales de cada tipo y pon tu
@@ -155,7 +180,7 @@ avisa de que falta configurarlo.
 |---|---|
 | Tratamientos, duraciones y precios | En la agenda: *Ajustes → Servicios*. La página pública se actualiza sola. |
 | Productos, precios y existencias de la tienda | En la agenda: *Tienda* |
-| Costos de envío | `api/envios.php` |
+| Costos de envío y llaves de Stripe | `.env` (plantilla en `.env.ejemplo`) |
 | En qué grupo sale un tratamiento | En la agenda: *Ajustes → Servicios → Editar → Categoría* |
 | Los grupos de la carta | `assets/js/config.js` → `categorias` |
 | Teléfono, dirección, redes, mapa | `assets/js/config.js` |
@@ -250,12 +275,15 @@ instalar-tienda.php          Instalador de la tienda — BÓRRALO también
 api/index.php                Toda la API: sesión, citas, servicios, ajustes
 api/comun.php                Conexión, sesión, CSRF, freno a la fuerza bruta
 api/tienda.php               Catálogo, carrito, pedidos
-api/envios.php               Tarifas y peso facturable — AJUSTA ESTO
+api/envios.php               Peso facturable y perfiles de empaque
+api/entorno.php              Lee el .env
 api/stripe.php               Cobro con Stripe, sin SDK
 api/webhook-stripe.php       Aviso de pago: la única prueba de que se cobró
 api/catalogo.php             Lista de precios inicial
 api/config.php               Contraseña de la base — no se sube a GitHub
 api/config.ejemplo.php       Plantilla del anterior
+.env                         Llaves de Stripe y tarifas — no se sube a GitHub
+.env.ejemplo                 Plantilla del anterior, con todo explicado
 api/.htaccess                Impide que Apache sirva la configuración
 sql/esquema.sql              Las tablas, como referencia
 

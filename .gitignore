@@ -3,3 +3,9 @@ Thumbs.db
 
 # Lleva la contraseña de la base de datos: nunca se sube.
 api/config.php
+
+# Llaves de Stripe y tarifas de cada servidor. La plantilla
+# (.env.ejemplo) sí se sube; el .env con los valores reales, nunca.
+.env
+.env.*
+!.env.ejemplo

@@ -37,6 +37,20 @@ Options -Indexes
 # del servidor. Sin esto, cualquiera podría descargarse el historial completo
 # del proyecto desde el navegador.
 RedirectMatch 404 /\.git
+
+# El .env lleva las llaves de Stripe. Si Apache lo sirviera, cualquiera
+# podría descargarlo escribiendo la dirección: quedan denegados tanto el
+# .env como la plantilla y cualquier copia (.env.viejo, .env.backup…).
+<FilesMatch "^\.env">
+  <IfModule mod_authz_core.c>
+    Require all denied
+  </IfModule>
+  <IfModule !mod_authz_core.c>
+    Order allow,deny
+    Deny from all
+  </IfModule>
+</FilesMatch>
+
 <FilesMatch "^(\.gitignore|\.htaccess|composer\.(json|lock)|.*\.md|.*\.sql)$">
   <IfModule mod_authz_core.c>
     Require all denied

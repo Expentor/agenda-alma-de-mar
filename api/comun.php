@@ -16,6 +16,12 @@ ini_set('log_errors', '1');
 
 require_once __DIR__ . '/config.php';
 
+/* El .env de la raíz completa lo que config.php no traiga: llaves de Stripe
+   y tarifas de envío. Va después, para que config.php siga mandando sobre
+   lo que ya define. */
+require_once __DIR__ . '/entorno.php';
+cargarEntorno();
+
 /* ───────────── Cabeceras ───────────── */
 header('Content-Type: application/json; charset=utf-8');
 header('X-Content-Type-Options: nosniff');

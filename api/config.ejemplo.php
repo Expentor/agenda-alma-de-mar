@@ -37,25 +37,16 @@ const VENTANA_INTENTOS = 900;   // 15 minutos
 const BLOQUEO_SEGUNDOS = 900;   // 15 minutos
 
 /* ── Tienda: cobro con Stripe ────────────────────────────── */
-// Las dos llaves salen del panel de Stripe. Mientras no estén, la tienda
-// se ve y el carrito funciona, pero el botón de pagar avisa de que falta
-// configurarlo — no se rompe nada.
+// Las llaves de Stripe y las tarifas de envío NO van aquí: van en el
+// archivo `.env` de la raíz del sitio. Copia `.env.ejemplo` como `.env`
+// y rellénalo ahí.
 //
-//   STRIPE_SECRETO  Desarrolladores → Claves de API → «Clave secreta».
-//                   Empieza por sk_test_ mientras pruebas y sk_live_ cuando
-//                   ya cobres de verdad. NO es la clave publicable.
+// El motivo es práctico: este `config.php` lo genera el instalador y es
+// distinto en cada servidor, mientras que el `.env` se edita a mano y
+// está pensado para eso. Además `git pull` no toca ninguno de los dos.
 //
-//   STRIPE_WEBHOOK  Desarrolladores → Webhooks → añade el endpoint
-//                     https://TU-DOMINIO/api/webhook-stripe.php
-//                   con el evento  checkout.session.completed
-//                   y copia aquí su «Clave de firma» (whsec_…).
-//
-// El webhook es lo que marca un pedido como pagado. Sin él los pagos entran
-// en Stripe pero los pedidos se quedan en «sin pagar».
+// Si por lo que sea prefieres ponerlas aquí, funciona igual y estas
+// mandan sobre el `.env`:
 //
 // const STRIPE_SECRETO = 'sk_live_...';
 // const STRIPE_WEBHOOK = 'whsec_...';
-
-// Dirección pública del sitio. Solo hace falta si Stripe vuelve a una
-// dirección equivocada (por ejemplo detrás de un proxy raro).
-// const SITIO_URL = 'https://almademar.mx';
