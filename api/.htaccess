@@ -1,10 +1,23 @@
-# La configuración lleva la contraseña de la base de datos: nunca se sirve.
-<FilesMatch "^config(\.ejemplo)?\.php$">
+# Aquí dentro solo hay dos puertas de entrada: index.php (la API) y
+# webhook-stripe.php (al que llama Stripe). Todo lo demás son archivos que
+# se incluyen desde ellas —configuración, catálogo, tarifas, cobro— y no
+# tienen por qué ser accesibles desde el navegador.
+<FilesMatch "\.php$">
   <IfModule mod_authz_core.c>
     Require all denied
   </IfModule>
   <IfModule !mod_authz_core.c>
     Order allow,deny
     Deny from all
+  </IfModule>
+</FilesMatch>
+
+<FilesMatch "^(index|webhook-stripe)\.php$">
+  <IfModule mod_authz_core.c>
+    Require all granted
+  </IfModule>
+  <IfModule !mod_authz_core.c>
+    Order allow,deny
+    Allow from all
   </IfModule>
 </FilesMatch>

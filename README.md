@@ -6,7 +6,8 @@ Sitio web del spa. Son dos páginas y un servidor:
 |---|---|---|
 | **Página pública** | `index.html` | Las clientas. Presentación del spa, carta de tratamientos, galería y reserva por WhatsApp. |
 | **Acceso** | `acceso.html` | Solo tú. Usuario y contraseña, y nada más. |
-| **Agenda** | `agenda.html` | Solo tú, ya dentro. Citas, clientas, ingresos y ajustes. |
+| **Tienda** | `tienda.html` | Las clientas. Catálogo, carrito y pago con tarjeta. |
+| **Agenda** | `agenda.html` | Solo tú, ya dentro. Citas, clientas, ingresos, pedidos, catálogo y ajustes. |
 | **Servidor** | `api/` | Nadie directamente. Es lo que habla con la base de datos. |
 
 Las dos pantallas tuyas se redirigen sola la una a la otra: si entras a la agenda sin
@@ -89,11 +90,72 @@ HTTPS**. Sin HTTPS, la contraseña viaja en claro por la red. Está explicado en
 
 ---
 
+## La tienda
+
+Vende los productos de la marca con envíos a toda la república y pago con tarjeta.
+
+- **Catálogo** — 129 productos en 8 categorías, sembrados desde la lista de precios.
+- **Carrito** — vive en el navegador de la clienta, pero solo guarda ids y cantidades.
+  **Los precios y el envío los calcula siempre el servidor**, en cada paso. Editar el
+  JavaScript desde el navegador no sirve para pagar de menos.
+- **Envío por peso facturable** — se compara el peso real contra el volumétrico y manda
+  el mayor, igual que cobra la paquetería. Con velas gana casi siempre el volumétrico.
+- **Recoger en el spa** — opción sin costo en el checkout.
+- **Pago con Stripe Checkout** — la clienta paga *en Stripe* y vuelve. Los datos de su
+  tarjeta no pasan por este servidor en ningún momento.
+- **Pedidos y catálogo** se administran desde la agenda, en sus dos pestañas.
+
+### Instalarla
+
+1. Abre <http://localhost/alma-de-mar/instalar-tienda.php> (o tu dominio).
+2. Si te pide un usuario de MySQL con permiso para crear tablas, dáselo: el usuario
+   normal de la aplicación no puede crear tablas, y es a propósito.
+3. **Borra `instalar-tienda.php`** del servidor.
+
+Se puede volver a ejecutar sin miedo: actualiza nombres y precios del catálogo, pero
+no pisa lo que hayas editado en el panel (descripciones, fotos, pesos, existencias) ni
+toca los pedidos.
+
+### Activar el cobro
+
+Las dos llaves de Stripe van en `api/config.php`, que no se sube a GitHub:
+
+```php
+const STRIPE_SECRETO = 'sk_live_...';   // Claves de API → Clave secreta
+const STRIPE_WEBHOOK = 'whsec_...';     // Webhooks → Clave de firma
+```
+
+El webhook se da de alta en Stripe apuntando a
+`https://tudominio.com/api/webhook-stripe.php`, con el evento
+`checkout.session.completed`. **Es lo que marca un pedido como pagado**: sin él los
+cobros entran en Stripe pero los pedidos se quedan en «sin pagar». Volver a la página
+de gracias no cuenta como prueba de pago — esa dirección la puede abrir cualquiera.
+
+Mientras no pongas las llaves, el catálogo y el carrito funcionan y el botón de pagar
+avisa de que falta configurarlo.
+
+### Lo que hay que ajustar tú
+
+| Qué | Dónde |
+|---|---|
+| Tarifas de envío, zona extendida, días de entrega | `api/envios.php` |
+| Peso y medidas por tipo de producto | `api/envios.php` → `perfiles` |
+| Peso y medidas de una pieza concreta | En el panel: *Tienda → Editar* |
+| Dirección para recoger | `api/envios.php` → `recoger_direccion` |
+
+> **Las tarifas y los pesos que trae son estimaciones**, puestas con precios públicos de
+> guía prepagada terrestre. Pesa y mide unas cuantas piezas reales de cada tipo y pon tu
+> cotización de paquetería: de ahí sale el cobro de todos tus envíos.
+
+---
+
 ## Dónde se cambia cada cosa
 
 | Qué quieres cambiar | Dónde |
 |---|---|
 | Tratamientos, duraciones y precios | En la agenda: *Ajustes → Servicios*. La página pública se actualiza sola. |
+| Productos, precios y existencias de la tienda | En la agenda: *Tienda* |
+| Costos de envío | `api/envios.php` |
 | En qué grupo sale un tratamiento | En la agenda: *Ajustes → Servicios → Editar → Categoría* |
 | Los grupos de la carta | `assets/js/config.js` → `categorias` |
 | Teléfono, dirección, redes, mapa | `assets/js/config.js` |
@@ -165,6 +227,7 @@ Guarda el archivo en tu Drive o tu correo. Una vez al mes basta.
 Con Apache y MySQL encendidos en XAMPP:
 
 - <http://localhost/alma-de-mar/> — página pública
+- <http://localhost/alma-de-mar/tienda.html> — tienda
 - <http://localhost/alma-de-mar/acceso.html> — acceso a la agenda
 
 Para entrar desde el celular **estando en el mismo WiFi**, mira la IP de tu computadora
@@ -177,12 +240,20 @@ Apache en el Firewall de Windows.
 
 ```
 index.html                   Página pública del spa
+tienda.html                  Tienda: catálogo, carrito y checkout
+gracias.html                 Confirmación tras pagar
 acceso.html                  Usuario y contraseña
 agenda.html                  Agenda, ya con la sesión iniciada
 instalar.php                 Instalador — BÓRRALO tras instalar
+instalar-tienda.php          Instalador de la tienda — BÓRRALO también
 
 api/index.php                Toda la API: sesión, citas, servicios, ajustes
 api/comun.php                Conexión, sesión, CSRF, freno a la fuerza bruta
+api/tienda.php               Catálogo, carrito, pedidos
+api/envios.php               Tarifas y peso facturable — AJUSTA ESTO
+api/stripe.php               Cobro con Stripe, sin SDK
+api/webhook-stripe.php       Aviso de pago: la única prueba de que se cobró
+api/catalogo.php             Lista de precios inicial
 api/config.php               Contraseña de la base — no se sube a GitHub
 api/config.ejemplo.php       Plantilla del anterior
 api/.htaccess                Impide que Apache sirva la configuración
@@ -190,19 +261,24 @@ sql/esquema.sql              Las tablas, como referencia
 
 assets/css/landing.css       Estilos de la página pública (fondo crema)
 assets/css/estilos.css       Estilos de la agenda (tema azul marino)
+assets/css/tienda.css        Estilos de la tienda
 
 assets/js/config.js          Contacto, dirección, horario, fotos
 assets/js/api.js             Cliente que habla con el servidor
 assets/js/landing.js         Página pública: menú, carta, reserva por WhatsApp
 assets/js/auth.js            Acceso y redirecciones entre las dos pantallas
 assets/js/app.js             Agenda: citas, vistas, ingresos, WhatsApp, copias
+assets/js/tienda.js          Tienda: catálogo, carrito, checkout
+assets/js/admin-tienda.js    Panel: pedidos y catálogo
 
 assets/img/logo*.svg         Logo oficial y su versión para fondos oscuros
 assets/img/spa/              Fotos del spa (y sus marcadores de color)
+assets/img/tienda/           Fotos de los productos, una por categoría
+sql/tienda.sql               Tablas de la tienda
 ```
 
-Al cambiar un `.css` o un `.js`, sube el número de `?v=8` en `index.html`,
-`acceso.html` y `agenda.html`. Así los navegadores de tus clientas cogen la versión nueva en vez de la
+Al cambiar un `.css` o un `.js`, sube el número de `?v=9` en `index.html`,
+`tienda.html`, `gracias.html`, `acceso.html` y `agenda.html`. Así los navegadores de tus clientas cogen la versión nueva en vez de la
 que tenían guardada.
 
 ---

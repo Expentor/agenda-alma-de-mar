@@ -464,6 +464,40 @@ select.campo option{ background:var(--superficie); color:var(--tinta); }
 
 .rango-vacio{ font-size:.88rem; color:var(--tinta-tenue); margin:0; }
 
+
+/* ── Pedidos de la tienda ── */
+.pedido__cabecera{
+  display:flex; align-items:center; justify-content:space-between; gap:1rem;
+  flex-wrap:wrap; margin-bottom:.8rem;
+}
+.pedido__folio{
+  font-family:var(--display); font-size:1.05rem; letter-spacing:.12em;
+  color:var(--oro); margin-right:.7rem;
+}
+.pedido__total{ font-family:var(--display); font-size:1.35rem; color:var(--tinta); }
+.pedido__meta{ font-size:.88rem; line-height:1.7; color:var(--tinta-suave); margin-bottom:.9rem; }
+.pedido__fecha{ color:var(--tinta-tenue); font-size:.82rem; }
+.pedido__items{
+  background:var(--superficie-2); border-radius:var(--radio-s);
+  padding:.7rem .9rem; margin-bottom:1.1rem;
+}
+.pedido__item{
+  display:flex; justify-content:space-between; gap:1rem;
+  padding:.3rem 0; font-size:.9rem; color:var(--tinta-suave);
+}
+.pedido__item--envio{ border-top:1px solid var(--borde); margin-top:.35rem; padding-top:.5rem; color:var(--tinta-tenue); }
+.pedido__acciones{ display:grid; grid-template-columns:repeat(auto-fit, minmax(190px, 1fr)); gap:1rem; }
+
+/* Estados de pedido, sobre los mismos colores que los de las citas */
+.estado--pendiente_pago{ background:var(--superficie-3); color:var(--tinta-tenue); }
+.estado--pagado{ background:var(--oro-velo); color:var(--oro-claro); }
+.estado--preparando{ background:var(--agua-velo); color:var(--agua); }
+.estado--enviado{ background:var(--agua-velo); color:var(--agua); }
+.estado--entregado{ background:var(--verde-velo); color:var(--verde); }
+.estado--cancelado{ background:var(--rojo-velo); color:var(--rojo); }
+
+.fila--archivada{ opacity:.55; }
+.marca{ display:inline-flex; align-items:center; gap:.5rem; font-size:.9rem; color:var(--tinta-suave); }
 /* ══════════════ Avisos flotantes ══════════════ */
 .avisos{ position:fixed; bottom:1.3rem; left:50%; transform:translateX(-50%); display:flex; flex-direction:column; gap:.5rem; z-index:80; }
 .aviso{

@@ -1,0 +1,109 @@
+<!doctype html>
+<html lang="es">
+<head>
+<meta charset="utf-8">
+<meta name="viewport" content="width=device-width, initial-scale=1, viewport-fit=cover">
+<title>¡Gracias! · Alma de Mar</title>
+<meta name="robots" content="noindex, nofollow">
+<meta name="theme-color" content="#F7F3EB">
+<link rel="icon" href="assets/img/favicon.svg" type="image/svg+xml">
+<link rel="preconnect" href="https://fonts.googleapis.com">
+<link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
+<link href="https://fonts.googleapis.com/css2?family=Josefin+Sans:wght@200;300;400&family=Jost:wght@300;400;500&display=swap" rel="stylesheet">
+<link rel="stylesheet" href="assets/css/landing.css?v=9">
+<link rel="stylesheet" href="assets/css/tienda.css?v=9">
+</head>
+<body>
+
+<header class="barra">
+  <a class="barra__marca" href="index.html" aria-label="Alma de Mar, inicio">
+    <img src="assets/img/logo.svg" alt="Alma de Mar · Facial &amp; Wellness" class="barra__logo">
+  </a>
+  <a class="btn btn--oro barra__cta" href="tienda.html">Volver a la tienda</a>
+</header>
+
+<main class="gracias" id="gracias">
+  <p class="nota-centro">Buscando tu pedido…</p>
+</main>
+
+<script src="assets/js/config.js?v=9"></script>
+<script src="assets/js/api.js?v=9"></script>
+<script>
+/* La confirmación se lee del servidor con folio + token. El token va en el
+   enlace al que Stripe devuelve a la clienta: sin él no se muestra nada, así
+   que nadie puede fisgonear pedidos ajenos probando folios. */
+(async () => {
+  'use strict';
+
+  const params = new URLSearchParams(location.search);
+  const folio  = params.get('folio') || '';
+  const token  = params.get('t') || '';
+  const caja   = document.getElementById('gracias');
+
+  const dinero = (n) => new Intl.NumberFormat('es-MX',
+    { style: 'currency', currency: 'MXN', maximumFractionDigits: 0 }).format(n || 0);
+
+  const escapar = (t) => String(t ?? '').replace(/[&<>"']/g, (ch) =>
+    ({ '&': '&amp;', '<': '&lt;', '>': '&gt;', '"': '&quot;', "'": '&#39;' })[ch]);
+
+  if (!folio || !token) {
+    caja.innerHTML = `<h1 class="titulo">Sin pedido que mostrar</h1>
+      <p class="seccion__intro">Este enlace no trae los datos del pedido.</p>
+      <a class="btn btn--oro" href="tienda.html">Ir a la tienda</a>`;
+    return;
+  }
+
+  let pedido;
+  try {
+    const r = await API.pedidoPorFolio(folio, token);
+    pedido = r.pedido;
+  } catch (e) {
+    caja.innerHTML = `<h1 class="titulo">No encontramos tu pedido</h1>
+      <p class="seccion__intro">${escapar(e.message)}</p>
+      <a class="btn btn--oro" href="tienda.html">Ir a la tienda</a>`;
+    return;
+  }
+
+  /* El carrito ya cumplió: el pedido está registrado en el servidor. */
+  try { localStorage.removeItem('alma-carrito'); } catch { /* da igual */ }
+
+  /* El pago lo confirma el webhook de Stripe, que puede tardar un par de
+     segundos en llegar. Mientras tanto no se miente: se dice que se está
+     confirmando, en vez de dar por bueno un pago que quizá no ocurrió. */
+  const pagado = pedido.estado !== 'pendiente_pago';
+
+  caja.innerHTML = `
+    <p class="antetitulo">${pagado ? 'Pedido confirmado' : 'Casi listo'}</p>
+    <h1 class="titulo">${pagado ? '¡Gracias por tu compra!' : 'Confirmando tu pago…'}</h1>
+    <p class="gracias__folio">${escapar(pedido.folio)}</p>
+
+    <p class="seccion__intro">
+      ${pagado
+        ? `Te mandamos la confirmación por correo. ${pedido.entrega === 'recoger'
+             ? 'Te avisamos en cuanto puedas pasar por él al spa.'
+             : 'En cuanto salga tu paquete te compartimos el número de guía.'}`
+        : 'Tu pago se está confirmando con el banco. Puede tardar unos segundos; esta página se actualiza sola.'}
+    </p>
+
+    <div class="gracias__caja">
+      ${pedido.items.map((i) => `
+        <div class="gracias__linea">
+          <span>${escapar(i.nombre)}${i.presentacion ? ' · ' + escapar(i.presentacion) : ''} × ${i.cantidad}</span>
+          <span>${dinero(i.precio * i.cantidad)}</span>
+        </div>`).join('')}
+      <div class="gracias__linea"><span>Productos</span><span>${dinero(pedido.subtotal)}</span></div>
+      <div class="gracias__linea">
+        <span>${pedido.entrega === 'recoger' ? 'Recoger en el spa' : 'Envío'}</span>
+        <span>${pedido.envio === 0 ? 'Sin costo' : dinero(pedido.envio)}</span>
+      </div>
+      <div class="gracias__linea"><strong>Total</strong><strong>${dinero(pedido.total)}</strong></div>
+    </div>
+
+    <a class="btn btn--oro" href="tienda.html">Seguir comprando</a>`;
+
+  // Si el webhook aún no llegaba, se vuelve a preguntar en unos segundos
+  if (!pagado) setTimeout(() => location.reload(), 5000);
+})();
+</script>
+</body>
+</html>

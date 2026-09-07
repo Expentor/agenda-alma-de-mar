@@ -823,6 +823,9 @@ function refrescar() {
   else if (vistaActiva === 'semana') pintarSemana();
   else if (vistaActiva === 'clientes') pintarClientes();
   else if (vistaActiva === 'ingresos') pintarIngresos();
+  // Las dos de la tienda las define admin-tienda.js, que carga después
+  else if (vistaActiva === 'pedidos') window.pintarPedidos?.();
+  else if (vistaActiva === 'productos') window.pintarProductos?.();
   else if (vistaActiva === 'ajustes') pintarAjustes();
 }
 

@@ -7,18 +7,28 @@
 
 declare(strict_types=1);
 require_once __DIR__ . '/comun.php';
+require_once __DIR__ . '/tienda.php';
 
 $ruta   = (string) ($_GET['r'] ?? '');
 $metodo = $_SERVER['REQUEST_METHOD'] ?? 'GET';
 
 /* Rutas abiertas: no piden sesión iniciada.
    `publico/servicios` la usa la página del spa para pintar la carta. */
-const RUTAS_ABIERTAS = ['sesion/entrar', 'sesion/estado', 'publico/servicios'];
+const RUTAS_ABIERTAS = [
+    'sesion/entrar', 'sesion/estado', 'publico/servicios',
+    // La tienda la usa gente sin cuenta: catálogo, cotización, pago y consulta.
+    'publico/tienda', 'tienda/cotizar', 'tienda/checkout', 'tienda/pedido',
+];
+
+/* POST sin token CSRF. El token protege de que OTRA web haga que tu navegador
+   ejecute una acción TUYA aprovechando tu sesión; en la tienda no hay sesión
+   ni nada que suplantar, así que aquí no aplica. */
+const POST_SIN_CSRF = ['sesion/entrar', 'tienda/cotizar', 'tienda/checkout'];
 
 try {
     if ($metodo === 'POST') {
         // El login todavía no tiene sesión, así que tampoco token que exigir
-        if ($ruta !== 'sesion/entrar') exigirCsrf();
+        if (!in_array($ruta, POST_SIN_CSRF, true)) exigirCsrf();
     } elseif ($metodo !== 'GET') {
         fallar('Método no permitido.', 405);
     }
@@ -39,6 +49,18 @@ try {
         'terapeutas/borrar'  => borrarTerapeuta(),
         'ajustes/guardar'    => guardarAjustes(),
         'publico/servicios'  => serviciosPublicos(),
+
+        /* ── Tienda ── */
+        'publico/tienda'     => tiendaPublica(),
+        'tienda/cotizar'     => tiendaCotizar(),
+        'tienda/checkout'    => tiendaCheckout(),
+        'tienda/pedido'      => tiendaPedido(),
+        'productos'          => adminProductos(),
+        'productos/guardar'  => guardarProducto(),
+        'productos/borrar'   => borrarProducto(),
+        'pedidos'            => adminPedidos(),
+        'pedidos/actualizar' => actualizarPedido(),
+
         default              => fallar('Ruta desconocida.', 404),
     };
 } catch (Throwable $e) {

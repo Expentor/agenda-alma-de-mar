@@ -1,0 +1,242 @@
+/* ══════════════════════════════════════════════════════════
+   ALMA DE MAR · Tienda
+   Se monta sobre landing.css: misma paleta, misma tipografía.
+   Aquí solo va lo que la página pública no tenía — la rejilla
+   de productos, el carrito y el checkout.
+   ══════════════════════════════════════════════════════════ */
+
+[hidden]{ display:none !important; }
+
+/* ══════════════ Portada ══════════════ */
+.tienda-hero{
+  display:grid; grid-template-columns:1.05fr .95fr; gap:clamp(2rem, 5vw, 4rem);
+  align-items:center;
+  max-width:var(--ancho); margin:0 auto;
+  padding:calc(var(--barra-h) + clamp(2.5rem, 6vw, 5rem)) clamp(1.2rem, 5vw, 3rem) clamp(2rem, 5vw, 4rem);
+}
+.tienda-hero__texto .titulo{ margin:.3rem 0 1.2rem; }
+.tienda-hero__foto img{
+  width:100%; height:clamp(280px, 42vw, 460px); object-fit:cover;
+  border-radius:var(--radio); box-shadow:var(--sombra-alta);
+}
+@media (max-width:820px){
+  .tienda-hero{ grid-template-columns:1fr; }
+  .tienda-hero__foto{ order:-1; }
+}
+
+/* ══════════════ Filtros ══════════════ */
+.filtros{
+  display:flex; gap:.55rem; flex-wrap:wrap; justify-content:center;
+  margin:0 auto 2.6rem; max-width:900px;
+}
+.filtro{
+  font-family:var(--display); font-size:.82rem; letter-spacing:.12em; text-transform:uppercase;
+  background:var(--blanco); border:1px solid var(--linea); border-radius:999px;
+  color:var(--azul-suave); padding:.55rem 1.1rem; cursor:pointer; transition:all .18s;
+}
+.filtro span{ opacity:.55; letter-spacing:.06em; }
+.filtro:hover{ border-color:var(--oro); color:var(--azul); }
+.filtro--activo{ background:var(--azul); border-color:var(--azul); color:var(--crema); }
+.filtro--activo span{ opacity:.7; }
+
+/* ══════════════ Rejilla de productos ══════════════ */
+.grupos-tienda{ max-width:var(--ancho); margin:0 auto; }
+.grupo-tienda{ margin-bottom:3.4rem; }
+.grupo-tienda__cabecera{
+  display:flex; align-items:baseline; gap:1rem; flex-wrap:wrap;
+  border-bottom:1px solid var(--linea); padding-bottom:.7rem; margin-bottom:1.6rem;
+}
+.grupo-tienda__titulo{
+  font-family:var(--display); font-size:clamp(1.3rem, 2.6vw, 1.7rem); font-weight:300;
+  letter-spacing:.04em; color:var(--azul); margin:0;
+}
+.grupo-tienda__nota{
+  font-family:var(--display); font-size:.72rem; letter-spacing:.2em; text-transform:uppercase;
+  color:var(--azul-tenue); margin-left:auto;
+}
+
+.productos{
+  display:grid; grid-template-columns:repeat(auto-fill, minmax(230px, 1fr)); gap:1.4rem;
+}
+
+.producto{
+  display:flex; flex-direction:column;
+  background:var(--blanco); border:1px solid var(--linea); border-radius:var(--radio);
+  overflow:hidden; box-shadow:var(--sombra); transition:transform .2s, box-shadow .2s;
+}
+.producto:hover{ transform:translateY(-3px); box-shadow:var(--sombra-alta); }
+.producto--agotado{ opacity:.62; }
+
+.producto__foto{ position:relative; aspect-ratio:1/1; background:var(--agua-palida); }
+.producto__foto img{ width:100%; height:100%; object-fit:cover; display:block; }
+/* Sin foto no se deja un hueco blanco: va un degradado de la marca */
+.producto__marcador{
+  position:absolute; inset:0;
+  background:
+    radial-gradient(circle at 32% 28%, rgba(199,169,112,.35), transparent 60%),
+    linear-gradient(140deg, var(--agua-palida), var(--oro-palido));
+}
+.producto__etiqueta{
+  position:absolute; top:.7rem; left:.7rem;
+  font-family:var(--display); font-size:.66rem; letter-spacing:.16em; text-transform:uppercase;
+  background:var(--azul); color:var(--crema); padding:.3rem .65rem; border-radius:999px;
+}
+
+.producto__cuerpo{ padding:1.1rem 1.1rem 1.2rem; display:flex; flex-direction:column; flex:1; gap:.35rem; }
+.producto__nombre{
+  font-family:var(--display); font-size:1.08rem; font-weight:400; color:var(--azul);
+  margin:0; line-height:1.25;
+}
+.producto__presentacion{
+  font-family:var(--display); font-size:.68rem; letter-spacing:.18em; text-transform:uppercase;
+  color:var(--oro); margin:0;
+}
+.producto__desc{ font-size:.86rem; line-height:1.55; color:var(--azul-suave); margin:.35rem 0 0; }
+.producto__pie{
+  display:flex; align-items:center; justify-content:space-between; gap:.7rem;
+  margin-top:auto; padding-top:.9rem;
+}
+.producto__precio{ font-family:var(--display); font-size:1.25rem; color:var(--azul); letter-spacing:.02em; }
+
+/* ══════════════ Contador ══════════════ */
+.contador{
+  display:inline-flex; align-items:center; gap:.15rem;
+  border:1px solid var(--linea); border-radius:999px; background:var(--crema);
+}
+.contador__btn{
+  width:30px; height:30px; border:none; background:none; cursor:pointer;
+  color:var(--azul); font-size:1.05rem; line-height:1; border-radius:999px;
+}
+.contador__btn:hover{ background:var(--oro-palido); }
+.contador__n{ min-width:22px; text-align:center; font-size:.92rem; color:var(--azul); }
+
+/* ══════════════ Velo ══════════════ */
+.velo{
+  position:fixed; inset:0; background:rgba(24,45,69,.45);
+  backdrop-filter:blur(2px); z-index:90;
+}
+
+/* ══════════════ Carrito ══════════════ */
+.cuenta{
+  display:inline-flex; align-items:center; justify-content:center;
+  min-width:20px; height:20px; padding:0 .35rem; margin-left:.45rem;
+  background:var(--azul); color:var(--crema); border-radius:999px; font-size:.75rem;
+}
+
+.carrito{
+  position:fixed; top:0; right:0; bottom:0; width:min(420px, 100%);
+  background:var(--crema); z-index:95; display:flex; flex-direction:column;
+  box-shadow:var(--sombra-alta);
+}
+.carrito__cabecera{
+  display:flex; align-items:center; justify-content:space-between;
+  padding:1.3rem 1.4rem; border-bottom:1px solid var(--linea);
+}
+.carrito__titulo{
+  font-family:var(--display); font-size:1.15rem; font-weight:300;
+  letter-spacing:.16em; text-transform:uppercase; color:var(--azul); margin:0;
+}
+.carrito__cerrar{
+  background:none; border:none; font-size:1.7rem; line-height:1;
+  color:var(--azul-tenue); cursor:pointer; padding:0 .2rem;
+}
+.carrito__cerrar:hover{ color:var(--azul); }
+
+.carrito__cuerpo{ flex:1; overflow-y:auto; padding:1.1rem 1.4rem; }
+.carrito__vacio{ text-align:center; color:var(--azul-tenue); padding:3rem 1rem; font-size:.95rem; }
+
+.carrito__item{
+  display:grid; grid-template-columns:56px 1fr auto; gap:.85rem;
+  padding:.9rem 0; border-bottom:1px solid var(--linea); align-items:center;
+}
+.carrito__foto{
+  width:56px; height:56px; border-radius:var(--radio-s); overflow:hidden;
+  background:var(--agua-palida);
+}
+.carrito__foto img{ width:100%; height:100%; object-fit:cover; }
+.carrito__nombre{ margin:0 0 .15rem; color:var(--azul); font-size:.95rem; }
+.carrito__pres{ margin:0 0 .45rem; font-size:.78rem; color:var(--azul-tenue); }
+.carrito__importe{ font-family:var(--display); color:var(--azul); white-space:nowrap; }
+
+.carrito__pie{ border-top:1px solid var(--linea); padding:1.2rem 1.4rem; background:var(--blanco); }
+.carrito__linea{ display:flex; justify-content:space-between; align-items:baseline; margin-bottom:.4rem; }
+.carrito__linea strong{ font-family:var(--display); font-size:1.3rem; font-weight:400; color:var(--azul); }
+.carrito__nota{ font-size:.8rem; color:var(--azul-tenue); margin:0 0 1rem; }
+
+/* ══════════════ Checkout ══════════════ */
+.checkout{
+  position:fixed; inset:0; z-index:96; overflow-y:auto;
+  padding:clamp(1rem, 4vw, 3rem) 1rem;
+}
+.checkout__caja{
+  max-width:720px; margin:0 auto; background:var(--crema);
+  border-radius:var(--radio); box-shadow:var(--sombra-alta);
+  padding:clamp(1.4rem, 4vw, 2.4rem);
+}
+.checkout__cabecera{ display:flex; align-items:flex-start; justify-content:space-between; gap:1rem; margin-bottom:1.6rem; }
+.checkout__form .bloque{ border:none; padding:0; margin:0 0 1.8rem; }
+.checkout__form legend{ padding:0; margin-bottom:.9rem; }
+
+.opciones-entrega{ display:flex; flex-direction:column; gap:.7rem; }
+.entrega{
+  display:flex; align-items:center; gap:.9rem;
+  border:1px solid var(--linea); border-radius:var(--radio-s);
+  background:var(--blanco); padding:.9rem 1rem; cursor:pointer; transition:border-color .18s;
+}
+.entrega--activa{ border-color:var(--oro); background:var(--oro-palido); }
+.entrega__texto{ display:flex; flex-direction:column; gap:.15rem; flex:1; }
+.entrega__texto strong{ color:var(--azul); font-weight:400; }
+.entrega__texto span{ font-size:.82rem; color:var(--azul-tenue); }
+.entrega__precio{ font-family:var(--display); color:var(--azul); white-space:nowrap; }
+
+.resumen-compra{
+  background:var(--blanco); border:1px solid var(--linea); border-radius:var(--radio-s);
+  padding:1.1rem 1.2rem; margin-bottom:1.2rem;
+}
+.resumen-compra__linea{
+  display:flex; justify-content:space-between; align-items:baseline;
+  padding:.35rem 0; color:var(--azul-suave); font-size:.95rem;
+}
+.resumen-compra__linea--total{
+  border-top:1px solid var(--linea); margin-top:.5rem; padding-top:.7rem; color:var(--azul);
+}
+.resumen-compra__linea--total strong{ font-family:var(--display); font-size:1.35rem; font-weight:400; }
+.resumen-compra__nota{ font-size:.8rem; color:var(--azul-tenue); margin:.4rem 0 0; line-height:1.5; }
+
+.checkout__error{
+  margin:0 0 1rem; padding:.75rem 1rem; border-radius:var(--radio-s);
+  background:#FBE9E7; border:1px solid #E8B4AE; color:#9C3A2E; font-size:.9rem;
+}
+.checkout__seguro{
+  font-size:.8rem; color:var(--azul-tenue); text-align:center; margin:.9rem 0 0; line-height:1.6;
+}
+
+/* ══════════════ Avisos ══════════════ */
+.avisos-tienda{
+  position:fixed; bottom:1.3rem; left:50%; transform:translateX(-50%);
+  display:flex; flex-direction:column; gap:.5rem; z-index:100;
+}
+.aviso-tienda{
+  background:var(--azul); color:var(--crema); padding:.7rem 1.2rem; border-radius:999px;
+  font-size:.9rem; box-shadow:var(--sombra-alta);
+}
+
+/* ══════════════ Gracias ══════════════ */
+.gracias{
+  max-width:640px; margin:0 auto;
+  padding:calc(var(--barra-h) + clamp(3rem, 8vw, 6rem)) 1.2rem clamp(3rem, 8vw, 6rem);
+  text-align:center;
+}
+.gracias__folio{
+  font-family:var(--display); font-size:1.6rem; letter-spacing:.14em;
+  color:var(--oro); margin:.4rem 0 1.6rem;
+}
+.gracias__caja{
+  background:var(--blanco); border:1px solid var(--linea); border-radius:var(--radio);
+  padding:1.4rem 1.5rem; text-align:left; box-shadow:var(--sombra); margin-bottom:1.6rem;
+}
+.gracias__linea{
+  display:flex; justify-content:space-between; gap:1rem;
+  padding:.45rem 0; border-bottom:1px solid var(--linea); font-size:.95rem; color:var(--azul-suave);
+}
+.gracias__linea:last-child{ border-bottom:none; }

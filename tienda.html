@@ -1,0 +1,156 @@
+<!doctype html>
+<html lang="es">
+<head>
+<meta charset="utf-8">
+<meta name="viewport" content="width=device-width, initial-scale=1, viewport-fit=cover">
+<title>Tienda · Alma de Mar</title>
+<meta name="description" content="Aceites esenciales, sinergias, inhaladores, brisas y velas de Alma de Mar. Envíos a toda la república.">
+<meta name="theme-color" content="#F7F3EB">
+<link rel="icon" href="assets/img/favicon.svg" type="image/svg+xml">
+<link rel="apple-touch-icon" href="assets/img/favicon.svg">
+<link rel="preconnect" href="https://fonts.googleapis.com">
+<link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
+<link href="https://fonts.googleapis.com/css2?family=Josefin+Sans:wght@200;300;400&family=Jost:wght@300;400;500&display=swap" rel="stylesheet">
+<link rel="stylesheet" href="assets/css/landing.css?v=9">
+<link rel="stylesheet" href="assets/css/tienda.css?v=9">
+</head>
+<body>
+
+<header class="barra" id="barra">
+  <a class="barra__marca" href="index.html" aria-label="Alma de Mar, inicio">
+    <img src="assets/img/logo.svg" alt="Alma de Mar · Facial &amp; Wellness" class="barra__logo">
+  </a>
+
+  <nav class="barra__nav" id="menu" aria-label="Navegación principal">
+    <a href="index.html">El spa</a>
+    <a href="index.html#servicios">Tratamientos</a>
+    <a href="#catalogo">Tienda</a>
+    <a href="index.html#contacto">Contacto</a>
+  </nav>
+
+  <button class="btn btn--oro barra__cta" id="btn-carrito">
+    Carrito <span class="cuenta" id="cuenta-carrito" hidden>0</span>
+  </button>
+</header>
+
+<main>
+
+  <!-- ═══════════ Portada ═══════════ -->
+  <section class="tienda-hero">
+    <div class="tienda-hero__texto">
+      <p class="antetitulo">Tienda</p>
+      <h1 class="titulo">Aromaterapia<br>para llevar a casa</h1>
+      <p class="seccion__intro">
+        Los mismos aceites y sinergias que usamos en cabina, formulados y envasados
+        por nosotras. <strong>Enviamos a toda la república.</strong>
+      </p>
+    </div>
+    <div class="tienda-hero__foto">
+      <img src="assets/img/tienda/estuche.jpg" alt="Estuche de aceites esenciales Alma de Mar" loading="eager">
+    </div>
+  </section>
+
+  <!-- ═══════════ Catálogo ═══════════ -->
+  <section class="seccion" id="catalogo">
+    <header class="seccion__cabecera">
+      <p class="antetitulo">Catálogo</p>
+      <h2 class="titulo">Nuestros productos</h2>
+    </header>
+
+    <div class="filtros" id="filtros" role="tablist" aria-label="Categorías"></div>
+
+    <div id="lista-productos" class="grupos-tienda">
+      <p class="nota-centro" id="cargando-tienda">Cargando el catálogo…</p>
+    </div>
+  </section>
+
+</main>
+
+<!-- ═══════════ Carrito ═══════════ -->
+<div class="velo" id="velo" hidden></div>
+
+<aside class="carrito" id="carrito" aria-label="Tu carrito" hidden>
+  <header class="carrito__cabecera">
+    <h2 class="carrito__titulo">Tu carrito</h2>
+    <button class="carrito__cerrar" id="cerrar-carrito" aria-label="Cerrar">×</button>
+  </header>
+
+  <div class="carrito__cuerpo" id="carrito-cuerpo"></div>
+
+  <footer class="carrito__pie" id="carrito-pie" hidden>
+    <div class="carrito__linea"><span>Subtotal</span><strong id="carrito-subtotal">$0</strong></div>
+    <p class="carrito__nota">El envío se calcula en el siguiente paso.</p>
+    <button class="btn btn--oro btn--bloque" id="btn-ir-checkout">Continuar</button>
+  </footer>
+</aside>
+
+<!-- ═══════════ Checkout ═══════════ -->
+<div class="checkout" id="checkout" hidden>
+  <div class="checkout__caja">
+    <header class="checkout__cabecera">
+      <h2 class="titulo" style="font-size:1.9rem">Finalizar compra</h2>
+      <button class="carrito__cerrar" id="cerrar-checkout" aria-label="Cerrar">×</button>
+    </header>
+
+    <form id="form-checkout" class="checkout__form">
+
+      <fieldset class="bloque">
+        <legend class="antetitulo">Tus datos</legend>
+        <div class="rejilla-campos">
+          <label class="campo-grupo campo-grupo--ancho">Nombre completo
+            <input class="campo" name="nombre" required autocomplete="name"></label>
+          <label class="campo-grupo">Correo
+            <input class="campo" type="email" name="email" required autocomplete="email"></label>
+          <label class="campo-grupo">WhatsApp <span class="opcional">opcional</span>
+            <input class="campo" name="telefono" inputmode="tel" autocomplete="tel"></label>
+        </div>
+      </fieldset>
+
+      <fieldset class="bloque">
+        <legend class="antetitulo">Entrega</legend>
+        <div class="opciones-entrega" id="opciones-entrega"></div>
+      </fieldset>
+
+      <fieldset class="bloque" id="bloque-direccion">
+        <legend class="antetitulo">Dirección de envío</legend>
+        <div class="rejilla-campos">
+          <label class="campo-grupo">Código postal
+            <input class="campo" name="cp" inputmode="numeric" maxlength="5" autocomplete="postal-code" required></label>
+          <label class="campo-grupo">Estado
+            <input class="campo" name="estado" autocomplete="address-level1" required></label>
+          <label class="campo-grupo">Ciudad
+            <input class="campo" name="ciudad" autocomplete="address-level2" required></label>
+          <label class="campo-grupo">Colonia
+            <input class="campo" name="colonia" autocomplete="address-level3"></label>
+          <label class="campo-grupo campo-grupo--ancho">Calle y número
+            <input class="campo" name="calle" autocomplete="street-address" required></label>
+          <label class="campo-grupo campo-grupo--ancho">Referencias <span class="opcional">opcional</span>
+            <input class="campo" name="referencias" placeholder="Entre qué calles, color de la fachada…"></label>
+        </div>
+      </fieldset>
+
+      <div class="resumen-compra" id="resumen-compra"></div>
+
+      <p class="checkout__error" id="checkout-error" role="alert" hidden></p>
+
+      <button class="btn btn--oro btn--bloque" type="submit" id="btn-pagar">Pagar</button>
+      <p class="checkout__seguro">
+        El pago lo procesa <strong>Stripe</strong>. Los datos de tu tarjeta no pasan por
+        este sitio en ningún momento.
+      </p>
+    </form>
+  </div>
+</div>
+
+<div id="avisos" class="avisos-tienda" aria-live="polite"></div>
+
+<footer class="pie">
+  <p class="pie__legal">Alma de Mar · Facial &amp; Wellness</p>
+  <a class="pie__admin" href="acceso.html">Acceso administración</a>
+</footer>
+
+<script src="assets/js/config.js?v=9"></script>
+<script src="assets/js/api.js?v=9"></script>
+<script src="assets/js/tienda.js?v=9"></script>
+</body>
+</html>

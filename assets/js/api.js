@@ -92,5 +92,20 @@ window.API = (() => {
 
     /* ── Página pública (sin sesión) ── */
     serviciosPublicos:  ()      => pedir('publico/servicios'),
+
+    /* ── Tienda ──
+       El carrito viaja como ids y cantidades. Los precios y el envío los
+       calcula el servidor en cada paso: aquí no se manda ni un importe. */
+    tiendaPublica:      ()      => pedir('publico/tienda'),
+    cotizarTienda:  (items, cp) => pedir('tienda/cotizar', { items, cp }),
+    checkoutTienda:     (datos) => pedir('tienda/checkout', datos),
+    pedidoPorFolio: (folio, t)  => pedir(`tienda/pedido&folio=${encodeURIComponent(folio)}&t=${encodeURIComponent(t)}`),
+
+    /* ── Tienda, desde el panel ── */
+    productos:          ()      => pedir('productos'),
+    guardarProducto:    (p)     => pedir('productos/guardar', p),
+    borrarProducto:     (id)    => pedir('productos/borrar', { id }),
+    pedidos:            ()      => pedir('pedidos'),
+    actualizarPedido:   (p)     => pedir('pedidos/actualizar', p),
   };
 })();

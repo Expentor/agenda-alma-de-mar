@@ -35,3 +35,27 @@ const MIN_LARGO_CLAVE = 10;
 const MAX_INTENTOS     = 6;
 const VENTANA_INTENTOS = 900;   // 15 minutos
 const BLOQUEO_SEGUNDOS = 900;   // 15 minutos
+
+/* ── Tienda: cobro con Stripe ────────────────────────────── */
+// Las dos llaves salen del panel de Stripe. Mientras no estén, la tienda
+// se ve y el carrito funciona, pero el botón de pagar avisa de que falta
+// configurarlo — no se rompe nada.
+//
+//   STRIPE_SECRETO  Desarrolladores → Claves de API → «Clave secreta».
+//                   Empieza por sk_test_ mientras pruebas y sk_live_ cuando
+//                   ya cobres de verdad. NO es la clave publicable.
+//
+//   STRIPE_WEBHOOK  Desarrolladores → Webhooks → añade el endpoint
+//                     https://TU-DOMINIO/api/webhook-stripe.php
+//                   con el evento  checkout.session.completed
+//                   y copia aquí su «Clave de firma» (whsec_…).
+//
+// El webhook es lo que marca un pedido como pagado. Sin él los pagos entran
+// en Stripe pero los pedidos se quedan en «sin pagar».
+//
+// const STRIPE_SECRETO = 'sk_live_...';
+// const STRIPE_WEBHOOK = 'whsec_...';
+
+// Dirección pública del sitio. Solo hace falta si Stripe vuelve a una
+// dirección equivocada (por ejemplo detrás de un proxy raro).
+// const SITIO_URL = 'https://almademar.mx';

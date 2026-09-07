@@ -99,8 +99,8 @@ Cuando cambies textos, fotos o estilos: sube por FTP solo los archivos que tocas
 **No subas nunca `api/config.php`** desde tu computadora: el del hosting tiene otros
 datos y lo romperías.
 
-Si cambiaste algún `.css` o `.js`, sube el número de `?v=8` en `index.html`,
-`acceso.html` y `agenda.html`, o las clientas seguirán viendo la versión vieja
+Si cambiaste algún `.css` o `.js`, sube el número de `?v=9` en `index.html`,
+`tienda.html`, `acceso.html` y `agenda.html`, o las clientas seguirán viendo la versión vieja
 guardada en su navegador.
 
 ---
