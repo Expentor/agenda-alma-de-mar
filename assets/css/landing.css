@@ -36,7 +36,7 @@ html,body{ margin:0; padding:0; }
 
 body{
   font-family:var(--texto);
-  font-weight:300;
+  font-weight:400;
   font-size:clamp(1rem, .97rem + .2vw, 1.08rem);
   line-height:1.75;
   color:var(--azul);
@@ -47,7 +47,7 @@ body{
 
 img{ max-width:100%; display:block; }
 
-h1,h2,h3{ font-family:var(--display); font-weight:200; margin:0; line-height:1.15; }
+h1,h2,h3{ font-family:var(--display); font-weight:300; margin:0; line-height:1.15; }
 
 a{ color:inherit; }
 
@@ -227,7 +227,7 @@ a{ color:inherit; }
   box-shadow:1px 0 0 var(--agua);
 }
 .cintillo__item strong{
-  display:block; font-family:var(--display); font-weight:300;
+  display:block; font-family:var(--display); font-weight:400;
   font-size:1.4rem; letter-spacing:.06em; color:var(--azul);
 }
 .cintillo__item span{ font-size:.88rem; color:var(--azul-tenue); letter-spacing:.04em; }
@@ -297,7 +297,7 @@ a{ color:inherit; }
   background:var(--oro); padding:.25rem .8rem; border-radius:999px; margin-bottom:1rem;
 }
 .servicio__nombre{
-  font-family:var(--display); font-weight:200;
+  font-family:var(--display); font-weight:300;
   font-size:1.4rem; letter-spacing:.02em; margin:0 0 .25rem; line-height:1.2;
 }
 .servicio__tipo{
@@ -322,7 +322,7 @@ a{ color:inherit; }
 }
 .paso{ position:relative; padding-top:1.6rem; border-top:1px solid var(--linea); }
 .paso__num{
-  font-family:var(--display); font-size:2.4rem; font-weight:200;
+  font-family:var(--display); font-size:2.4rem; font-weight:300;
   color:var(--agua-media); letter-spacing:.04em; display:block; line-height:1;
 }
 .paso h3{ font-size:1.22rem; letter-spacing:.04em; margin:.7rem 0 .5rem; }
@@ -385,7 +385,7 @@ a{ color:inherit; }
 .opcional{ text-transform:none; letter-spacing:.04em; opacity:.7; }
 
 .campo{
-  font-family:var(--texto); font-size:1rem; font-weight:300; color:var(--azul);
+  font-family:var(--texto); font-size:1rem; font-weight:400; color:var(--azul);
   background:var(--blanco);
   border:1px solid var(--agua-media); border-radius:var(--radio-s);
   padding:.75rem .9rem; width:100%;

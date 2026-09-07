@@ -1,0 +1,48 @@
+<!doctype html>
+<html lang="es">
+<head>
+<meta charset="utf-8">
+<meta name="viewport" content="width=device-width, initial-scale=1, viewport-fit=cover">
+<title>Acceso · Alma de Mar</title>
+<meta name="description" content="Acceso a la agenda de Alma de Mar · Facial &amp; Wellness">
+<meta name="robots" content="noindex, nofollow">
+<meta name="theme-color" content="#182D45">
+<link rel="icon" href="assets/img/favicon.svg" type="image/svg+xml">
+<link rel="apple-touch-icon" href="assets/img/favicon.svg">
+<link rel="manifest" href="manifest-agenda.webmanifest">
+<link rel="preconnect" href="https://fonts.googleapis.com">
+<link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
+<link href="https://fonts.googleapis.com/css2?family=Josefin+Sans:wght@200;300;400&family=Jost:wght@300;400;500&display=swap" rel="stylesheet">
+<link rel="stylesheet" href="assets/css/estilos.css?v=8">
+</head>
+<body>
+
+<!-- ═══════════════ Pantalla de acceso ═══════════════
+     Empieza oculta: primero se le pregunta al servidor si ya hay sesión.
+     Si la hay, esta página no llega a verse y el navegador va derecho a la
+     agenda; así nadie escribe su contraseña dos veces sin necesidad. -->
+<section class="acceso" id="acceso" hidden>
+  <div class="acceso__caja">
+    <img src="assets/img/isotipo-claro.svg" alt="" class="acceso__sello" aria-hidden="true">
+    <h1 class="acceso__titulo">Agenda</h1>
+    <p class="acceso__lema">Alma de Mar · Facial &amp; Wellness</p>
+
+    <form id="form-acceso" class="acceso__form" autocomplete="on">
+      <label class="campo-grupo">Usuario
+        <input class="campo" name="usuario" autocomplete="username" required autocapitalize="none" spellcheck="false">
+      </label>
+      <label class="campo-grupo">Contraseña
+        <input class="campo" name="clave" type="password" autocomplete="current-password" required>
+      </label>
+      <p class="acceso__error" id="acceso-error" role="alert" hidden></p>
+      <button class="boton boton--oro boton--bloque" name="entrar" type="submit">Entrar</button>
+    </form>
+
+    <a class="acceso__volver" href="index.html">← Volver a la página del spa</a>
+  </div>
+</section>
+
+<script src="assets/js/api.js?v=8"></script>
+<script src="assets/js/auth.js?v=8"></script>
+</body>
+</html>

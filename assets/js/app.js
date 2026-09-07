@@ -29,6 +29,10 @@ let fechaActiva = hoyISO();
 let inicioSemana = lunesDe(hoyISO());
 let vistaActiva = 'dia';
 
+/* Rango de la vista de Ingresos. Arranca en el mes en curso. */
+let ingDesde = `${hoyISO().slice(0, 7)}-01`;
+let ingHasta = ultimoDiaDeMes(hoyISO().slice(0, 7));
+
 async function traerDatos() {
   const r = await API.datos();
   datos = {
@@ -324,6 +328,171 @@ function pintarClientes() {
   });
 }
 
+/* ───────────── Vista: INGRESOS ─────────────
+   Cuánto se ha cobrado en un mes, o entre dos fechas cualesquiera.
+
+   «Cobrado» es solo lo que está marcado como **completada**. Lo pendiente y
+   lo confirmado todavía no ha entrado en caja, así que se cuenta aparte: una
+   previsión y el dinero real no pueden salir en la misma cifra.
+
+   Todo se calcula aquí con las citas que ya están en memoria — la API las
+   manda todas —, así que cambiar el rango no cuesta ni una ida al servidor. */
+
+const ESTADOS_COBRADOS  = ['completada'];
+const ESTADOS_PREVISTOS = ['pendiente', 'confirmada'];
+const ESTADOS_PERDIDOS  = ['cancelada', 'ausente'];
+
+/* Un mes es «YYYY-MM», el mismo formato que usa <input type="month">. */
+const mesDe = (iso) => iso.slice(0, 7);
+
+function ultimoDiaDeMes(ym) {
+  const [anio, mes] = ym.split('-').map(Number);
+  return hoyISO(new Date(anio, mes, 0));   // día 0 del mes siguiente = último de este
+}
+
+function sumarMeses(ym, n) {
+  const [anio, mes] = ym.split('-').map(Number);
+  const d = new Date(anio, mes - 1 + n, 1);
+  return `${d.getFullYear()}-${String(d.getMonth() + 1).padStart(2, '0')}`;
+}
+
+const rangoDeMes = (ym) => ({ desde: `${ym}-01`, hasta: ultimoDiaDeMes(ym) });
+
+/* Si el rango es justo un mes natural devuelve ese mes; si no, cadena vacía.
+   Es lo que mantiene sincronizados el selector de mes y las dos fechas. */
+function mesCompleto(desde, hasta) {
+  const ym = mesDe(desde);
+  return (desde === `${ym}-01` && hasta === ultimoDiaDeMes(ym)) ? ym : '';
+}
+
+function tituloRango(desde, hasta) {
+  const ym = mesCompleto(desde, hasta);
+  if (ym) return mayus(aDate(desde).toLocaleDateString('es-MX', { month: 'long', year: 'numeric' }));
+  if (desde === hasta) return fechaLarga(desde);
+  const opciones = { day: 'numeric', month: 'long', year: 'numeric' };
+  return `${aDate(desde).toLocaleDateString('es-MX', opciones)} – ${aDate(hasta).toLocaleDateString('es-MX', opciones)}`;
+}
+
+function diasDelRango(desde, hasta) {
+  return Math.round((aDate(hasta) - aDate(desde)) / 86400000) + 1;
+}
+
+/* Los dos extremos entran. Comparar cadenas ISO ya ordena bien las fechas. */
+const citasEntre = (desde, hasta) =>
+  datos.citas.filter(c => c.fecha >= desde && c.fecha <= hasta);
+
+const sumaPrecios = (citas) => citas.reduce((t, c) => t + Number(c.precio || 0), 0);
+
+/* Agrupa por lo que devuelva `clave`; las claves vacías se descartan. */
+function agrupar(citas, clave) {
+  const grupos = new Map();
+  citas.forEach(c => {
+    const k = clave(c);
+    if (k === null || k === undefined || k === '') return;
+    if (!grupos.has(k)) grupos.set(k, { clave: k, nombre: String(k), n: 0, total: 0 });
+    const g = grupos.get(k);
+    g.n += 1;
+    g.total += Number(c.precio || 0);
+  });
+  return [...grupos.values()];
+}
+
+/* Lista con barra proporcional. La barra solo ayuda a comparar de un vistazo:
+   la cifra exacta va siempre escrita al lado. */
+function pintarDesglose(contenedor, filas, vacio) {
+  if (!filas.length) {
+    contenedor.innerHTML = `<p class="rango-vacio">${escapar(vacio)}</p>`;
+    return;
+  }
+  const tope = Math.max(...filas.map(f => f.total), 1);
+  contenedor.innerHTML = filas.map(f => `
+    <div class="fila fila--dato">
+      <span class="fila__nombre">${escapar(f.nombre)}
+        <span class="fila__meta">· ${f.n} servicio${f.n === 1 ? '' : 's'}</span></span>
+      <span class="fila__cifra">${dinero(f.total)}</span>
+      <span class="barra"><span class="barra__relleno" style="width:${Math.max(2, Math.round(f.total / tope * 100))}%"></span></span>
+    </div>`).join('');
+}
+
+function pintarIngresos() {
+  /* Los controles siempre reflejan el rango que se está mostrando. */
+  document.getElementById('ing-desde').value = ingDesde;
+  document.getElementById('ing-hasta').value = ingHasta;
+  document.getElementById('ing-mes').value   = mesCompleto(ingDesde, ingHasta);
+  document.getElementById('titulo-ingresos').textContent = tituloRango(ingDesde, ingHasta);
+
+  const enRango   = citasEntre(ingDesde, ingHasta);
+  const cobradas  = enRango.filter(c => ESTADOS_COBRADOS.includes(c.estado));
+  const previstas = enRango.filter(c => ESTADOS_PREVISTOS.includes(c.estado));
+  const perdidas  = enRango.filter(c => ESTADOS_PERDIDOS.includes(c.estado));
+
+  const cobrado  = sumaPrecios(cobradas);
+  const previsto = sumaPrecios(previstas);
+  const perdido  = sumaPrecios(perdidas);
+  const dias     = diasDelRango(ingDesde, ingHasta);
+
+  document.getElementById('resumen-ingresos').innerHTML =
+    `<div><strong>${dias}</strong> día${dias === 1 ? '' : 's'} en el rango</div>
+     <div><strong>${enRango.length}</strong> cita${enRango.length === 1 ? '' : 's'} en total</div>`;
+
+  const canceladas = perdidas.filter(c => c.estado === 'cancelada').length;
+  const ausentes   = perdidas.filter(c => c.estado === 'ausente').length;
+  const plural = (n) => (n === 1 ? '' : 's');
+
+  document.getElementById('ing-cifras').innerHTML = `
+    <div class="cifra cifra--principal">
+      <p class="cifra__etiqueta">Cobrado</p>
+      <div class="cifra__valor">${dinero(cobrado)}</div>
+      <p class="cifra__nota">${cobradas.length} servicio${plural(cobradas.length)} completado${plural(cobradas.length)}</p>
+    </div>
+    <div class="cifra">
+      <p class="cifra__etiqueta">Por cobrar</p>
+      <div class="cifra__valor">${dinero(previsto)}</div>
+      <p class="cifra__nota">${previstas.length} cita${plural(previstas.length)} pendiente${plural(previstas.length)} o confirmada${plural(previstas.length)}</p>
+    </div>
+    <div class="cifra">
+      <p class="cifra__etiqueta">Ticket medio</p>
+      <div class="cifra__valor">${dinero(cobradas.length ? cobrado / cobradas.length : 0)}</div>
+      <p class="cifra__nota">Por servicio cobrado</p>
+    </div>
+    <div class="cifra">
+      <p class="cifra__etiqueta">No se cobró</p>
+      <div class="cifra__valor">${dinero(perdido)}</div>
+      <p class="cifra__nota">${canceladas} cancelada${plural(canceladas)} · ${ausentes} no asistió</p>
+    </div>`;
+
+  const porTotal = (a, b) => b.total - a.total;
+
+  pintarDesglose(
+    document.getElementById('ing-servicios'),
+    agrupar(cobradas, c => c.servicioNombre || 'Sin servicio').sort(porTotal),
+    'No hay servicios cobrados en este rango.'
+  );
+
+  /* El desglose por terapeuta solo tiene sentido si alguien las tiene asignadas. */
+  const porTerapeuta = agrupar(cobradas, c => c.terapeuta).sort(porTotal);
+  document.getElementById('panel-terapeutas').hidden = !porTerapeuta.length;
+  if (porTerapeuta.length) pintarDesglose(document.getElementById('ing-terapeutas'), porTerapeuta, '');
+
+  const porDia = agrupar(cobradas, c => c.fecha)
+    .sort((a, b) => a.clave.localeCompare(b.clave))
+    .map(g => ({ ...g, nombre: fechaCorta(g.clave) }));
+
+  pintarDesglose(
+    document.getElementById('ing-dias'),
+    porDia,
+    'Ningún día del rango tiene servicios cobrados.'
+  );
+}
+
+/* Cambiar el rango pasa siempre por aquí, para que los controles y lo pintado
+   no puedan acabar diciendo cosas distintas. */
+function fijarRango(desde, hasta) {
+  ingDesde = desde;
+  ingHasta = hasta;
+  pintarIngresos();
+}
+
 /* ───────────── Vista: AJUSTES ─────────────
    El horario se muestra, no se edita: se cambia en config.js para que
    la agenda y la página pública no puedan contradecirse. */
@@ -347,19 +516,30 @@ function pintarAjustes() {
   document.getElementById('cfg-prefijo').value   = cfg.prefijo;
   document.getElementById('cfg-plantilla').value = cfg.plantilla;
 
+  /* El selector de categoría se rellena una sola vez: si se repintara en cada
+     refresco, borraría lo que estuvieras eligiendo a mitad de una edición. */
+  const selCat = document.getElementById('select-categoria');
+  if (!selCat.options.length) limpiarFormServicio();
+
   const ls = document.getElementById('lista-servicios');
   ls.innerHTML = '';
   datos.servicios.forEach(s => {
+    const cat = categoriaPorId(s.categoria);
     const fila = document.createElement('div');
-    fila.className = 'fila';
-    fila.innerHTML = `<span class="fila__nombre">${escapar(s.nombre)}${s.tipo ? ` <em class="fila__tipo">${escapar(s.tipo)}</em>` : ''}</span>
+    fila.className = 'fila fila--servicio' + (cat ? '' : ' fila--sin-categoria');
+    fila.innerHTML = `<span class="fila__nombre">${escapar(s.nombre)}${s.tipo ? ` <em class="fila__tipo">${escapar(s.tipo)}</em>` : ''}
+        <span class="fila__categoria">${cat ? escapar(cat.titulo) : 'Sin categoría · sale en «Otros tratamientos»'}</span></span>
       <span class="fila__meta">${s.duracion} min · ${dinero(s.precio)}</span>
+      <button class="editar" title="Editar servicio">Editar</button>
       <button class="quitar" title="Archivar servicio">×</button>`;
+    fila.querySelector('.editar').addEventListener('click', () => editarServicio(s));
     fila.querySelector('.quitar').addEventListener('click', async () => {
       if (!confirm(`¿Quitar "${s.nombre}" de la carta? Las citas que ya lo usaron no se modifican.`)) return;
       const r = await pedir(() => API.borrarServicio(s.id), 'Servicio archivado');
       if (!r) return;
       datos.servicios = datos.servicios.filter(x => x.id !== s.id);
+      // Si justo era el que estabas editando, el formulario ya no apunta a nada
+      if (formServicio.elements.id.value === s.id) limpiarFormServicio();
       pintarAjustes();
     });
     ls.appendChild(fila);
@@ -642,6 +822,7 @@ function refrescar() {
   if (vistaActiva === 'dia') pintarDia();
   else if (vistaActiva === 'semana') pintarSemana();
   else if (vistaActiva === 'clientes') pintarClientes();
+  else if (vistaActiva === 'ingresos') pintarIngresos();
   else if (vistaActiva === 'ajustes') pintarAjustes();
 }
 
@@ -664,6 +845,49 @@ document.getElementById('semana-siguiente').addEventListener('click', () => { in
 document.getElementById('btn-semana-actual').addEventListener('click', () => { inicioSemana = lunesDe(hoyISO()); pintarSemana(); });
 document.getElementById('buscador').addEventListener('input', pintarClientes);
 
+/* ── Ingresos: el mes de arriba y las dos fechas de abajo son lo mismo ── */
+document.getElementById('ing-mes').addEventListener('change', (e) => {
+  if (!e.target.value) { pintarIngresos(); return; }   // vaciarlo no cambia el rango
+  const r = rangoDeMes(e.target.value);
+  fijarRango(r.desde, r.hasta);
+});
+
+function saltarMes(n) {
+  const base = mesCompleto(ingDesde, ingHasta) || mesDe(ingDesde);
+  const r = rangoDeMes(sumarMeses(base, n));
+  fijarRango(r.desde, r.hasta);
+}
+document.getElementById('mes-anterior').addEventListener('click', () => saltarMes(-1));
+document.getElementById('mes-siguiente').addEventListener('click', () => saltarMes(1));
+document.getElementById('btn-mes-actual').addEventListener('click', () => {
+  const r = rangoDeMes(mesDe(hoyISO()));
+  fijarRango(r.desde, r.hasta);
+});
+
+/* Si el rango se cruza, se arrastra el otro extremo en vez de dar un error:
+   nadie quiere leer un aviso por poner las fechas al revés. */
+document.getElementById('ing-desde').addEventListener('change', (e) => {
+  const v = e.target.value;
+  if (!v) { pintarIngresos(); return; }
+  fijarRango(v, v > ingHasta ? v : ingHasta);
+});
+document.getElementById('ing-hasta').addEventListener('change', (e) => {
+  const v = e.target.value;
+  if (!v) { pintarIngresos(); return; }
+  fijarRango(v < ingDesde ? v : ingDesde, v);
+});
+
+document.querySelectorAll('#panel-rango [data-atajo]').forEach(btn => {
+  btn.addEventListener('click', () => {
+    const mesHoy = mesDe(hoyISO());
+    const anio = mesHoy.slice(0, 4);
+    if (btn.dataset.atajo === 'mes')        { const r = rangoDeMes(mesHoy); fijarRango(r.desde, r.hasta); }
+    if (btn.dataset.atajo === 'mes-pasado') { const r = rangoDeMes(sumarMeses(mesHoy, -1)); fijarRango(r.desde, r.hasta); }
+    if (btn.dataset.atajo === 'trimestre')  { fijarRango(`${sumarMeses(mesHoy, -2)}-01`, ultimoDiaDeMes(mesHoy)); }
+    if (btn.dataset.atajo === 'anio')       { fijarRango(`${anio}-01-01`, `${anio}-12-31`); }
+  });
+});
+
 ['intervalo', 'prefijo', 'plantilla'].forEach(k => {
   document.getElementById('cfg-' + k).addEventListener('change', async (e) => {
     const valor = k === 'intervalo' ? Number(e.target.value) : e.target.value;
@@ -674,17 +898,70 @@ document.getElementById('buscador').addEventListener('input', pintarClientes);
   });
 });
 
-document.getElementById('form-servicio').addEventListener('submit', async (e) => {
+/* ───────────── Servicios ─────────────
+   El mismo formulario da de alta y edita: con `id` vacío crea, con `id` puesto
+   actualiza. La categoría importa más de lo que parece — es la que decide en
+   qué grupo aparece el servicio en la página pública. */
+const formServicio = document.getElementById('form-servicio');
+
+const categoriaPorId = (id) => window.ALMA.categorias.find(c => c.id === id);
+
+function opcionesDeCategoria(elegida) {
+  const marcada = (v) => (v === elegida ? ' selected' : '');
+  return window.ALMA.categorias
+      .map(c => `<option value="${escapar(c.id)}"${marcada(c.id)}>${escapar(c.titulo)}</option>`)
+      .join('')
+    + `<option value=""${marcada('')}>Otros tratamientos</option>`;
+}
+
+function limpiarFormServicio() {
+  formServicio.reset();
+  formServicio.elements.id.value = '';
+  /* Por defecto, la primera categoría real: así lo que se da de alta cae en un
+     grupo de la carta en vez de quedarse suelto. */
+  document.getElementById('select-categoria').innerHTML =
+    opcionesDeCategoria(window.ALMA.categorias[0]?.id ?? '');
+  document.getElementById('btn-servicio').textContent = 'Añadir servicio';
+  document.getElementById('btn-cancelar-servicio').hidden = true;
+}
+
+function editarServicio(s) {
+  const f = formServicio.elements;
+  f.id.value          = s.id;
+  f.nombre.value      = s.nombre;
+  f.tipo.value        = s.tipo || '';
+  f.duracion.value    = s.duracion;
+  f.precio.value      = s.precio;
+  f.descripcion.value = s.descripcion || '';
+  document.getElementById('select-categoria').innerHTML = opcionesDeCategoria(s.categoria || '');
+  document.getElementById('btn-servicio').textContent = 'Guardar cambios';
+  document.getElementById('btn-cancelar-servicio').hidden = false;
+  formServicio.scrollIntoView({ behavior: 'smooth', block: 'center' });
+  setTimeout(() => f.nombre.focus(), 200);
+}
+
+document.getElementById('btn-cancelar-servicio').addEventListener('click', limpiarFormServicio);
+
+formServicio.addEventListener('submit', async (e) => {
   e.preventDefault();
   const f = e.target.elements;
+  const editando = Boolean(f.id.value);
+
   const r = await pedir(() => API.guardarServicio({
+    id: f.id.value,
     nombre: f.nombre.value.trim(),
+    tipo: f.tipo.value.trim(),
+    categoria: f.categoria.value,
     duracion: Number(f.duracion.value),
     precio: Number(f.precio.value),
-  }), 'Servicio añadido');
+    descripcion: f.descripcion.value.trim(),
+  }), editando ? 'Servicio actualizado' : 'Servicio añadido');
   if (!r) return;
-  datos.servicios.push(r.servicio);
-  e.target.reset();
+
+  const i = datos.servicios.findIndex(x => x.id === r.servicio.id);
+  if (i >= 0) datos.servicios[i] = r.servicio; else datos.servicios.push(r.servicio);
+
+  limpiarFormServicio();
   pintarAjustes();
 });
 

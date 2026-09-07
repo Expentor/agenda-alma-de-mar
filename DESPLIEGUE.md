@@ -83,7 +83,7 @@ que dé con la dirección podría reinstalar tu agenda encima.
 
 ## 6) Ponerlo en el celular
 
-Abre `https://tudominio.com/agenda.html` y añádelo a la pantalla de inicio:
+Abre `https://tudominio.com/acceso.html` y añádelo a la pantalla de inicio:
 
 - **iPhone (Safari)**: botón *Compartir* → **Añadir a pantalla de inicio**
 - **Android (Chrome)**: menú ⋮ → **Instalar aplicación**
@@ -99,8 +99,9 @@ Cuando cambies textos, fotos o estilos: sube por FTP solo los archivos que tocas
 **No subas nunca `api/config.php`** desde tu computadora: el del hosting tiene otros
 datos y lo romperías.
 
-Si cambiaste algún `.css` o `.js`, sube el número de `?v=3` en `index.html` y
-`agenda.html`, o las clientas seguirán viendo la versión vieja guardada en su navegador.
+Si cambiaste algún `.css` o `.js`, sube el número de `?v=8` en `index.html`,
+`acceso.html` y `agenda.html`, o las clientas seguirán viendo la versión vieja
+guardada en su navegador.
 
 ---
 

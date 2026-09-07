@@ -216,7 +216,7 @@ if ($_SERVER['REQUEST_METHOD'] === 'POST' && !$yaInstalado) {
       <strong>Borra este archivo</strong> (<code>instalar.php</code>) del servidor.
       Si necesitas empezar de cero, borra antes <code>api/config.php</code> a mano.
     </p>
-    <a class="boton boton--oro" href="agenda.html">Ir a la agenda</a>
+    <a class="boton boton--oro" href="acceso.html">Ir a la agenda</a>
   </div>
 
 <?php elseif ($hecho): ?>
@@ -236,7 +236,7 @@ if ($_SERVER['REQUEST_METHOD'] === 'POST' && !$yaInstalado) {
       <strong>Borra ahora el archivo <code>instalar.php</code></strong> de la carpeta del sitio.
       Mientras siga ahí, cualquiera que dé con la dirección podría reinstalar la agenda.
     </p>
-    <a class="boton boton--oro" href="agenda.html">Entrar a la agenda</a>
+    <a class="boton boton--oro" href="acceso.html">Entrar a la agenda</a>
   </div>
 
 <?php else: ?>

@@ -13,31 +13,9 @@
 <link rel="preconnect" href="https://fonts.googleapis.com">
 <link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
 <link href="https://fonts.googleapis.com/css2?family=Josefin+Sans:wght@200;300;400&family=Jost:wght@300;400;500&display=swap" rel="stylesheet">
-<link rel="stylesheet" href="assets/css/estilos.css?v=6">
+<link rel="stylesheet" href="assets/css/estilos.css?v=8">
 </head>
 <body>
-
-<!-- ═══════════════ Pantalla de acceso ═══════════════ -->
-<section class="acceso" id="acceso" hidden>
-  <div class="acceso__caja">
-    <img src="assets/img/isotipo-claro.svg" alt="" class="acceso__sello" aria-hidden="true">
-    <h1 class="acceso__titulo">Agenda</h1>
-    <p class="acceso__lema">Alma de Mar · Facial &amp; Wellness</p>
-
-    <form id="form-acceso" class="acceso__form" autocomplete="on">
-      <label class="campo-grupo">Usuario
-        <input class="campo" name="usuario" autocomplete="username" required autocapitalize="none" spellcheck="false">
-      </label>
-      <label class="campo-grupo">Contraseña
-        <input class="campo" name="clave" type="password" autocomplete="current-password" required>
-      </label>
-      <p class="acceso__error" id="acceso-error" role="alert" hidden></p>
-      <button class="boton boton--oro boton--bloque" name="entrar" type="submit">Entrar</button>
-    </form>
-
-    <a class="acceso__volver" href="index.html">← Volver a la página del spa</a>
-  </div>
-</section>
 
 <!-- ═══════════════ Agenda ═══════════════ -->
 <div id="app" hidden>
@@ -52,6 +30,7 @@
     <button class="pestana" data-vista="dia" aria-current="page">Día</button>
     <button class="pestana" data-vista="semana">Semana</button>
     <button class="pestana" data-vista="clientes">Clientes</button>
+    <button class="pestana" data-vista="ingresos">Ingresos</button>
     <button class="pestana" data-vista="ajustes">Ajustes</button>
   </nav>
 
@@ -101,6 +80,61 @@
     <div id="lista-clientes" class="tarjetas"></div>
   </section>
 
+  <!-- ───────────── INGRESOS ─────────────
+       Cuánto se ha cobrado en un mes, o entre dos fechas cualesquiera.
+       El mes de arriba y el rango de abajo son el mismo dato visto de dos
+       maneras: al mover uno se actualiza el otro. -->
+  <section class="vista" id="vista-ingresos" hidden>
+    <div class="barra-fecha">
+      <div class="nav-fecha" id="ingresos-controles">
+        <button class="icono" id="mes-anterior" aria-label="Mes anterior">‹</button>
+        <input type="month" id="ing-mes" class="campo" aria-label="Mes">
+        <button class="icono" id="mes-siguiente" aria-label="Mes siguiente">›</button>
+        <button class="boton boton--fino" id="btn-mes-actual">Este mes</button>
+      </div>
+      <p class="titulo-fecha" id="titulo-ingresos"></p>
+      <div class="resumen" id="resumen-ingresos"></div>
+    </div>
+
+    <div class="panel" id="panel-rango">
+      <h2 class="titulo-seccion">Rango de fechas</h2>
+      <p class="ayuda">
+        Elige un mes arriba o marca aquí las fechas exactas. Los dos extremos
+        <strong>entran</strong> en la cuenta.
+      </p>
+      <div class="rejilla-campos" style="margin-bottom:1rem">
+        <label class="campo-grupo">Desde
+          <input type="date" id="ing-desde" class="campo"></label>
+        <label class="campo-grupo">Hasta
+          <input type="date" id="ing-hasta" class="campo"></label>
+      </div>
+      <div class="fila-alta">
+        <button class="boton boton--fino" data-atajo="mes">Este mes</button>
+        <button class="boton boton--fino" data-atajo="mes-pasado">Mes pasado</button>
+        <button class="boton boton--fino" data-atajo="trimestre">Últimos 3 meses</button>
+        <button class="boton boton--fino" data-atajo="anio">Este año</button>
+      </div>
+    </div>
+
+    <div class="cifras" id="ing-cifras"></div>
+
+    <div class="panel">
+      <h2 class="titulo-seccion">Por servicio</h2>
+      <div id="ing-servicios" class="filas"></div>
+    </div>
+
+    <div class="panel" id="panel-terapeutas" hidden>
+      <h2 class="titulo-seccion">Por terapeuta</h2>
+      <div id="ing-terapeutas" class="filas"></div>
+    </div>
+
+    <div class="panel">
+      <h2 class="titulo-seccion">Día a día</h2>
+      <p class="ayuda">Solo salen los días con al menos un servicio cobrado.</p>
+      <div id="ing-dias" class="filas"></div>
+    </div>
+  </section>
+
   <!-- ───────────── AJUSTES ───────────── -->
   <section class="vista" id="vista-ajustes" hidden>
     <div class="panel">
@@ -125,13 +159,33 @@
 
     <div class="panel">
       <h2 class="titulo-seccion">Servicios</h2>
-      <p class="ayuda">Al elegir un servicio en una cita se rellenan solos la duración y el precio.</p>
+      <p class="ayuda">
+        Al elegir un servicio en una cita se rellenan solos la duración y el precio.
+        <strong>La categoría decide en qué grupo sale en la página pública</strong>, así que
+        conviene ponerla. Pulsa «Editar» en cualquiera para cambiarlo.
+      </p>
       <div id="lista-servicios" class="filas"></div>
-      <form id="form-servicio" class="fila-alta">
-        <input class="campo" name="nombre" placeholder="Nombre del servicio" required>
-        <input class="campo campo--corto" name="duracion" type="number" min="5" step="5" placeholder="min" required>
-        <input class="campo campo--corto" name="precio" type="number" min="0" step="10" placeholder="$" required>
-        <button class="boton boton--fino" type="submit">Añadir</button>
+
+      <form id="form-servicio" class="form-servicio">
+        <input type="hidden" name="id">
+        <div class="rejilla-campos">
+          <label class="campo-grupo campo-grupo--ancho">Nombre
+            <input class="campo" name="nombre" placeholder="Cenote de Luz" required></label>
+          <label class="campo-grupo">Categoría
+            <select class="campo" name="categoria" id="select-categoria"></select></label>
+          <label class="campo-grupo">Tipo <span class="opcional">opcional</span>
+            <input class="campo" name="tipo" placeholder="Facial iluminador"></label>
+          <label class="campo-grupo">Duración (min)
+            <input class="campo" name="duracion" type="number" min="5" step="5" required></label>
+          <label class="campo-grupo">Precio
+            <input class="campo" name="precio" type="number" min="0" step="10" required></label>
+          <label class="campo-grupo campo-grupo--ancho">Descripción <span class="opcional">opcional, sale en la tarjeta de la página pública</span>
+            <textarea class="campo campo--area" name="descripcion" rows="2"></textarea></label>
+        </div>
+        <div class="fila-alta">
+          <button class="boton boton--fino" type="submit" id="btn-servicio">Añadir servicio</button>
+          <button class="boton boton--fino" type="button" id="btn-cancelar-servicio" hidden>Cancelar</button>
+        </div>
       </form>
     </div>
 
@@ -234,9 +288,9 @@
 
 <div id="avisos" class="avisos" aria-live="polite"></div>
 
-<script src="assets/js/config.js?v=6"></script>
-<script src="assets/js/api.js?v=6"></script>
-<script src="assets/js/app.js?v=6"></script>
-<script src="assets/js/auth.js?v=6"></script>
+<script src="assets/js/config.js?v=8"></script>
+<script src="assets/js/api.js?v=8"></script>
+<script src="assets/js/app.js?v=8"></script>
+<script src="assets/js/auth.js?v=8"></script>
 </body>
 </html>

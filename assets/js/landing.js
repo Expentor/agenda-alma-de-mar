@@ -108,30 +108,55 @@
 
   let servicios = [];
 
+  /* Los grupos de la carta salen de config.js. Pero un servicio dado de alta
+     desde la agenda puede llegar sin categoría, y antes esos no encajaban en
+     ningún grupo: desaparecían de la página sin decir nada, y si NINGUNO
+     tenía categoría la carta entera salía vacía. Ahora los que sobran caen
+     en «Otros tratamientos». Más vale un grupo genérico que una carta a la
+     que le faltan cosas. */
+  function gruposDeCarta() {
+    const conocidas = new Set(cfg.categorias.map((c) => c.id));
+
+    const grupos = cfg.categorias.map((cat) => ({
+      titulo: cat.titulo,
+      nota: cat.nota,
+      suyos: servicios.filter((s) => s.categoria === cat.id),
+    }));
+
+    const sueltos = servicios.filter((s) => !conocidas.has(s.categoria));
+    if (sueltos.length) grupos.push({ titulo: 'Otros tratamientos', nota: '', suyos: sueltos });
+
+    return grupos.filter((g) => g.suyos.length);
+  }
+
   function pintarCarta() {
-    $('#lista-servicios').innerHTML = cfg.categorias.map((cat) => {
-      const suyos = servicios.filter((s) => s.categoria === cat.id);
-      if (!suyos.length) return '';
-      return `
-        <section class="carta-grupo">
-          <header class="carta-grupo__cabecera revelar">
-            <h3 class="carta-grupo__titulo">${escapar(cat.titulo)}</h3>
-            ${cat.nota ? `<span class="carta-grupo__nota">${escapar(cat.nota)}</span>` : ''}
-          </header>
-          <div class="servicios">${suyos.map(tarjetaServicio).join('')}</div>
-        </section>`;
-    }).join('');
+    const grupos = gruposDeCarta();
+
+    /* El servidor contestó, pero no hay ni un servicio que enseñar. Es
+       distinto de que fallara la red, así que el mensaje también lo es. */
+    if (!grupos.length) {
+      $('#lista-servicios').innerHTML =
+        `<p class="nota-centro">Estamos actualizando la carta.
+          Escríbenos por WhatsApp y te contamos los tratamientos disponibles.</p>`;
+      return;
+    }
+
+    $('#lista-servicios').innerHTML = grupos.map((g) => `
+      <section class="carta-grupo">
+        <header class="carta-grupo__cabecera revelar">
+          <h3 class="carta-grupo__titulo">${escapar(g.titulo)}</h3>
+          ${g.nota ? `<span class="carta-grupo__nota">${escapar(g.nota)}</span>` : ''}
+        </header>
+        <div class="servicios">${g.suyos.map(tarjetaServicio).join('')}</div>
+      </section>`).join('');
   }
 
   function pintarSelectorDeReserva() {
-    const sel = $('#reserva-servicio');
-    sel.innerHTML = cfg.categorias.map((cat) => {
-      const suyos = servicios.filter((s) => s.categoria === cat.id);
-      if (!suyos.length) return '';
-      const opciones = suyos.map((s) =>
+    $('#reserva-servicio').innerHTML = gruposDeCarta().map((g) => {
+      const opciones = g.suyos.map((s) =>
         `<option value="${escapar(s.nombre)}">${escapar(s.nombre)} · ${s.duracion} min · ${dinero(s.precio)}</option>`
       ).join('');
-      return `<optgroup label="${escapar(cat.titulo)}">${opciones}</optgroup>`;
+      return `<optgroup label="${escapar(g.titulo)}">${opciones}</optgroup>`;
     }).join('') + '<option value="Aún no lo sé, necesito orientación">Aún no lo sé, necesito orientación</option>';
   }
 

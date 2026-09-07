@@ -5,8 +5,13 @@ Sitio web del spa. Son dos páginas y un servidor:
 | Parte | Archivo | Quién entra |
 |---|---|---|
 | **Página pública** | `index.html` | Las clientas. Presentación del spa, carta de tratamientos, galería y reserva por WhatsApp. |
-| **Agenda** | `agenda.html` | Solo tú, con usuario y contraseña. Citas, clientas y ajustes. |
+| **Acceso** | `acceso.html` | Solo tú. Usuario y contraseña, y nada más. |
+| **Agenda** | `agenda.html` | Solo tú, ya dentro. Citas, clientas, ingresos y ajustes. |
 | **Servidor** | `api/` | Nadie directamente. Es lo que habla con la base de datos. |
+
+Las dos pantallas tuyas se redirigen sola la una a la otra: si entras a la agenda sin
+sesión te manda al acceso, y si entras al acceso teniendo sesión te manda a la agenda.
+No hace falta acordarse de cuál es la dirección buena.
 
 Las citas se guardan en una **base de datos MySQL**, así que son las mismas desde el
 celular, la tablet y la computadora. La contraseña la comprueba el servidor, no el navegador.
@@ -68,7 +73,13 @@ HTTPS**. Sin HTTPS, la contraseña viaja en claro por la red. Está explicado en
 - **Día** — el horario dividido en franjas; los huecos libres se agendan con un clic.
 - **Semana** — los siete días con las citas de cada uno.
 - **Clientes** — ficha por clienta: teléfono, visitas, gasto acumulado e historial.
+- **Ingresos** — cuánto se cobró en un mes o entre dos fechas, con el desglose por
+  servicio, por terapeuta y día a día. *Cobrado* es solo lo marcado como completado;
+  lo pendiente y lo confirmado se cuenta aparte, como previsión.
 - **Ajustes** — servicios, terapeutas, mensaje de WhatsApp, contraseña y copias.
+  Cada servicio lleva una **categoría**, y es la que decide en qué grupo sale en la
+  página pública. Los que no la tienen aparecen bajo «Otros tratamientos», nunca se
+  pierden. Se corrige con el botón *Editar* de cada fila.
 - **WhatsApp** — abre el chat de la clienta con la confirmación ya escrita.
 - **Avisos de cruce** — si dos citas se solapan, avisa antes de guardar.
 - **Solo dentro del horario** — no deja agendar fuera de los turnos, ni una cita que
@@ -83,6 +94,8 @@ HTTPS**. Sin HTTPS, la contraseña viaja en claro por la red. Está explicado en
 | Qué quieres cambiar | Dónde |
 |---|---|
 | Tratamientos, duraciones y precios | En la agenda: *Ajustes → Servicios*. La página pública se actualiza sola. |
+| En qué grupo sale un tratamiento | En la agenda: *Ajustes → Servicios → Editar → Categoría* |
+| Los grupos de la carta | `assets/js/config.js` → `categorias` |
 | Teléfono, dirección, redes, mapa | `assets/js/config.js` |
 | Horario de atención | `assets/js/config.js` → `horario` |
 | Fotos del spa | `assets/img/spa/` (ver más abajo) |
@@ -152,7 +165,7 @@ Guarda el archivo en tu Drive o tu correo. Una vez al mes basta.
 Con Apache y MySQL encendidos en XAMPP:
 
 - <http://localhost/alma-de-mar/> — página pública
-- <http://localhost/alma-de-mar/agenda.html> — agenda
+- <http://localhost/alma-de-mar/acceso.html> — acceso a la agenda
 
 Para entrar desde el celular **estando en el mismo WiFi**, mira la IP de tu computadora
 (`ipconfig`) y usa `http://192.168.x.x/alma-de-mar/`. Puede que tengas que permitir
@@ -164,7 +177,8 @@ Apache en el Firewall de Windows.
 
 ```
 index.html                   Página pública del spa
-agenda.html                  Agenda, tras el inicio de sesión
+acceso.html                  Usuario y contraseña
+agenda.html                  Agenda, ya con la sesión iniciada
 instalar.php                 Instalador — BÓRRALO tras instalar
 
 api/index.php                Toda la API: sesión, citas, servicios, ajustes
@@ -180,15 +194,15 @@ assets/css/estilos.css       Estilos de la agenda (tema azul marino)
 assets/js/config.js          Contacto, dirección, horario, fotos
 assets/js/api.js             Cliente que habla con el servidor
 assets/js/landing.js         Página pública: menú, carta, reserva por WhatsApp
-assets/js/auth.js            Pantalla de acceso
-assets/js/app.js             Agenda: citas, vistas, WhatsApp, copias
+assets/js/auth.js            Acceso y redirecciones entre las dos pantallas
+assets/js/app.js             Agenda: citas, vistas, ingresos, WhatsApp, copias
 
 assets/img/logo*.svg         Logo oficial y su versión para fondos oscuros
 assets/img/spa/              Fotos del spa (y sus marcadores de color)
 ```
 
-Al cambiar un `.css` o un `.js`, sube el número de `?v=3` en `index.html` y
-`agenda.html`. Así los navegadores de tus clientas cogen la versión nueva en vez de la
+Al cambiar un `.css` o un `.js`, sube el número de `?v=8` en `index.html`,
+`acceso.html` y `agenda.html`. Así los navegadores de tus clientas cogen la versión nueva en vez de la
 que tenían guardada.
 
 ---
