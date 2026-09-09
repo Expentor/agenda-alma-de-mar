@@ -143,14 +143,15 @@ try {
            La consulta va entre comillas DOBLES para poder escribir '' sin
            escapar, que en una comparación SQL se lee mucho mejor. */
         $st = $bd->prepare(
-            "INSERT INTO productos (id, nombre, categoria, presentacion, precio, descripcion, cientifico, precauciones, orden)
-             VALUES (?, ?, ?, ?, ?, ?, ?, ?, ?)
+            "INSERT INTO productos (id, nombre, categoria, presentacion, precio, descripcion, cientifico, precauciones, imagen, orden)
+             VALUES (?, ?, ?, ?, ?, ?, ?, ?, ?, ?)
              ON DUPLICATE KEY UPDATE
                nombre = VALUES(nombre), categoria = VALUES(categoria),
                presentacion = VALUES(presentacion), precio = VALUES(precio),
                descripcion  = IF(descripcion  IS NULL OR descripcion  = '', VALUES(descripcion),  descripcion),
                cientifico   = IF(cientifico   IS NULL OR cientifico   = '', VALUES(cientifico),   cientifico),
-               precauciones = IF(precauciones IS NULL OR precauciones = '', VALUES(precauciones), precauciones)"
+               precauciones = IF(precauciones IS NULL OR precauciones = '', VALUES(precauciones), precauciones),
+               imagen       = IF(imagen       IS NULL OR imagen       = '', VALUES(imagen),       imagen)"
         );
 
         $antes = (int) $bd->query('SELECT COUNT(*) FROM productos')->fetchColumn();
@@ -168,8 +169,12 @@ try {
             if (!is_file(__DIR__ . '/assets/img/tienda/' . $c['imagen']))        { $faltan[] = $c['imagen']; }
         }
         $resumen[] = $faltan
-            ? 'Sin foto todavía: ' . implode(' · ', $faltan) . '. Se muestra un marcador con los colores de la marca.'
+            ? 'Categorías sin foto: ' . implode(' · ', $faltan) . '. Se muestra un marcador con los colores de la marca.'
             : 'Todas las categorías tienen foto.';
+
+        $conFoto = (int) $bd->query("SELECT COUNT(*) FROM productos WHERE imagen <> ''")->fetchColumn();
+        $total   = (int) $bd->query('SELECT COUNT(*) FROM productos')->fetchColumn();
+        $resumen[] = "$conFoto de $total productos tienen foto propia; el resto usa la de su categoría.";
 
         // ── 5. Stripe ──
         $resumen[] = stripeListo()

@@ -96,9 +96,13 @@ HTTPS**. Sin HTTPS, la contraseña viaja en claro por la red. Está explicado en
 Vende los productos de la marca con envíos a toda la república y pago con tarjeta.
 
 - **Catálogo** — 129 productos en 8 categorías, sembrados desde la lista de precios.
-  Los 41 que aparecen en el *Catálogo 2026* traen además descripción, nombre botánico
-  y **precauciones** (embarazo, fotosensibilidad, niños). Las precauciones salen
-  plegadas bajo cada producto: importan, pero no deben tapar la tarjeta.
+  Los 41 que aparecen en el *Catálogo 2026* traen además descripción, nombre botánico,
+  **precauciones** (embarazo, fotosensibilidad, niños) y **foto propia**. Las
+  precauciones salen plegadas bajo cada producto: importan, pero no deben tapar la
+  tarjeta.
+- **Fotos** — cada producto puede tener la suya, en `assets/img/tienda/` y nombrada con
+  su id (`ae-bergamota.jpg`). El que no tenga usa la de su categoría, y si la categoría
+  tampoco tiene, sale un degradado con los colores de la marca — nunca un hueco blanco.
 - **Carrito** — vive en el navegador de la clienta, pero solo guarda ids y cantidades.
   **Los precios y el envío los calcula siempre el servidor**, en cada paso. Editar el
   JavaScript desde el navegador no sirve para pagar de menos.
@@ -120,8 +124,8 @@ Se puede volver a ejecutar sin miedo:
 
 - **Nombre, categoría, presentación y precio** se refrescan siempre: son los datos de
   la lista oficial.
-- **Descripción, nombre botánico y precauciones** solo se rellenan si están vacíos, así
-  que lo que escribas en el panel no se pierde nunca.
+- **Descripción, nombre botánico, precauciones y foto** solo se rellenan si están
+  vacíos, así que lo que pongas en el panel no se pierde nunca.
 - Fotos, pesos, medidas y existencias no se tocan. Los pedidos, tampoco.
 
 Si la base ya existía de una versión anterior, el instalador **añade las columnas que
@@ -312,7 +316,7 @@ assets/js/admin-tienda.js    Panel: pedidos y catálogo
 
 assets/img/logo*.svg         Logo oficial y su versión para fondos oscuros
 assets/img/spa/              Fotos del spa (y sus marcadores de color)
-assets/img/tienda/           Fotos de los productos, una por categoría
+assets/img/tienda/           Fotos: una por categoría y una por producto
 sql/tienda.sql               Tablas de la tienda
 ```
 
