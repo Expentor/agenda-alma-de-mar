@@ -14,6 +14,12 @@ CREATE TABLE IF NOT EXISTS productos (
   presentacion VARCHAR(40)   NOT NULL DEFAULT '',
   precio       DECIMAL(10,2) NOT NULL DEFAULT 0,
   descripcion  TEXT          NULL,
+  -- Nombre botánico, para los aceites puros: «Lavandula angustifolia».
+  cientifico   VARCHAR(120)  NOT NULL DEFAULT '',
+  -- Embarazo, fotosensibilidad, niños… Va aparte de la descripción a
+  -- propósito: es información de seguridad, no texto de venta, y no debe
+  -- quedar enterrada al final de un párrafo publicitario.
+  precauciones TEXT          NULL,
   imagen       VARCHAR(120)  NOT NULL DEFAULT '',
   gramos       INT           NOT NULL DEFAULT 0,
   largo_cm     DECIMAL(6,1)  NOT NULL DEFAULT 0,

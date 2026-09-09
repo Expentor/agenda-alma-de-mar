@@ -96,6 +96,9 @@ HTTPS**. Sin HTTPS, la contraseña viaja en claro por la red. Está explicado en
 Vende los productos de la marca con envíos a toda la república y pago con tarjeta.
 
 - **Catálogo** — 129 productos en 8 categorías, sembrados desde la lista de precios.
+  Los 41 que aparecen en el *Catálogo 2026* traen además descripción, nombre botánico
+  y **precauciones** (embarazo, fotosensibilidad, niños). Las precauciones salen
+  plegadas bajo cada producto: importan, pero no deben tapar la tarjeta.
 - **Carrito** — vive en el navegador de la clienta, pero solo guarda ids y cantidades.
   **Los precios y el envío los calcula siempre el servidor**, en cada paso. Editar el
   JavaScript desde el navegador no sirve para pagar de menos.
@@ -113,9 +116,17 @@ Vende los productos de la marca con envíos a toda la república y pago con tarj
    normal de la aplicación no puede crear tablas, y es a propósito.
 3. **Borra `instalar-tienda.php`** del servidor.
 
-Se puede volver a ejecutar sin miedo: actualiza nombres y precios del catálogo, pero
-no pisa lo que hayas editado en el panel (descripciones, fotos, pesos, existencias) ni
-toca los pedidos.
+Se puede volver a ejecutar sin miedo:
+
+- **Nombre, categoría, presentación y precio** se refrescan siempre: son los datos de
+  la lista oficial.
+- **Descripción, nombre botánico y precauciones** solo se rellenan si están vacíos, así
+  que lo que escribas en el panel no se pierde nunca.
+- Fotos, pesos, medidas y existencias no se tocan. Los pedidos, tampoco.
+
+Si la base ya existía de una versión anterior, el instalador **añade las columnas que
+falten** (`cientifico`, `precauciones`). Eso necesita permiso de `ALTER`: si el usuario
+de la aplicación no lo tiene, te pedirá un usuario de MySQL que sí.
 
 ### Activar el cobro
 
@@ -179,7 +190,7 @@ el valor por defecto que trae el código.
 | Qué quieres cambiar | Dónde |
 |---|---|
 | Tratamientos, duraciones y precios | En la agenda: *Ajustes → Servicios*. La página pública se actualiza sola. |
-| Productos, precios y existencias de la tienda | En la agenda: *Tienda* |
+| Productos, precios, descripciones y precauciones | En la agenda: *Tienda → Editar* |
 | Costos de envío y llaves de Stripe | `.env` (plantilla en `.env.ejemplo`) |
 | En qué grupo sale un tratamiento | En la agenda: *Ajustes → Servicios → Editar → Categoría* |
 | Los grupos de la carta | `assets/js/config.js` → `categorias` |
@@ -305,7 +316,7 @@ assets/img/tienda/           Fotos de los productos, una por categoría
 sql/tienda.sql               Tablas de la tienda
 ```
 
-Al cambiar un `.css` o un `.js`, sube el número de `?v=9` en `index.html`,
+Al cambiar un `.css` o un `.js`, sube el número de `?v=10` en `index.html`,
 `tienda.html`, `gracias.html`, `acceso.html` y `agenda.html`. Así los navegadores de tus clientas cogen la versión nueva en vez de la
 que tenían guardada.
 

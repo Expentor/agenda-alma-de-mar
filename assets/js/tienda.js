@@ -111,8 +111,13 @@
         </div>
         <div class="producto__cuerpo">
           <h3 class="producto__nombre">${escapar(p.nombre)}</h3>
+          ${p.cientifico ? `<p class="producto__cientifico">${escapar(p.cientifico)}</p>` : ''}
           ${p.presentacion ? `<p class="producto__presentacion">${escapar(p.presentacion)}</p>` : ''}
           ${p.descripcion ? `<p class="producto__desc">${escapar(p.descripcion)}</p>` : ''}
+          ${p.precauciones ? `<details class="precauciones">
+              <summary>Precauciones</summary>
+              <p>${escapar(p.precauciones)}</p>
+            </details>` : ''}
           <div class="producto__pie">
             <span class="producto__precio">${dinero(p.precio)}</span>
             ${agotado ? '' : enCarrito

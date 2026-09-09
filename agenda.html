@@ -13,7 +13,7 @@
 <link rel="preconnect" href="https://fonts.googleapis.com">
 <link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
 <link href="https://fonts.googleapis.com/css2?family=Josefin+Sans:wght@200;300;400&family=Jost:wght@300;400;500&display=swap" rel="stylesheet">
-<link rel="stylesheet" href="assets/css/estilos.css?v=9">
+<link rel="stylesheet" href="assets/css/estilos.css?v=10">
 </head>
 <body>
 
@@ -187,8 +187,12 @@
             <input class="campo" name="precio" type="number" min="0" step="10" required></label>
           <label class="campo-grupo">Existencias <span class="opcional">vacío = sin control</span>
             <input class="campo" name="stock" type="number" min="0" step="1"></label>
+          <label class="campo-grupo">Nombre científico <span class="opcional">solo aceites puros</span>
+            <input class="campo" name="cientifico" placeholder="Lavandula angustifolia"></label>
           <label class="campo-grupo campo-grupo--ancho">Descripción
-            <textarea class="campo campo--area" name="descripcion" rows="2"></textarea></label>
+            <textarea class="campo campo--area" name="descripcion" rows="3"></textarea></label>
+          <label class="campo-grupo campo-grupo--ancho">Precauciones <span class="opcional">embarazo, fotosensibilidad, niños… sale plegado en la tienda</span>
+            <textarea class="campo campo--area" name="precauciones" rows="2"></textarea></label>
           <label class="campo-grupo campo-grupo--ancho">Foto propia <span class="opcional">archivo dentro de assets/img/tienda/ — si se deja vacío se usa la de la categoría</span>
             <input class="campo" name="imagen" placeholder="lavanda.jpg"></label>
         </div>
@@ -377,10 +381,10 @@
 
 <div id="avisos" class="avisos" aria-live="polite"></div>
 
-<script src="assets/js/config.js?v=9"></script>
-<script src="assets/js/api.js?v=9"></script>
-<script src="assets/js/app.js?v=9"></script>
-<script src="assets/js/admin-tienda.js?v=9"></script>
-<script src="assets/js/auth.js?v=9"></script>
+<script src="assets/js/config.js?v=10"></script>
+<script src="assets/js/api.js?v=10"></script>
+<script src="assets/js/app.js?v=10"></script>
+<script src="assets/js/admin-tienda.js?v=10"></script>
+<script src="assets/js/auth.js?v=10"></script>
 </body>
 </html>

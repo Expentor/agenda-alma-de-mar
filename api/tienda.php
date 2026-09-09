@@ -28,6 +28,8 @@ function filaProducto(array $f): array {
         'presentacion' => $f['presentacion'],
         'precio'       => (float) $f['precio'],
         'descripcion'  => $f['descripcion'] ?? '',
+        'cientifico'   => $f['cientifico'] ?? '',
+        'precauciones' => $f['precauciones'] ?? '',
         'imagen'       => $f['imagen'] ?? '',
         'stock'        => $f['stock'] === null ? null : (int) $f['stock'],
         'destacado'    => (int) $f['destacado'] === 1,
@@ -318,13 +320,16 @@ function guardarProducto(): never {
         : null;
 
     bd()->prepare(
-        'INSERT INTO productos (id, nombre, categoria, presentacion, precio, descripcion, imagen,
+        'INSERT INTO productos (id, nombre, categoria, presentacion, precio, descripcion, cientifico,
+                                precauciones, imagen,
                                 gramos, largo_cm, ancho_cm, alto_cm, stock, destacado, activo, orden)
-         VALUES (:id, :nombre, :categoria, :presentacion, :precio, :descripcion, :imagen,
+         VALUES (:id, :nombre, :categoria, :presentacion, :precio, :descripcion, :cientifico,
+                 :precauciones, :imagen,
                  :gramos, :largo, :ancho, :alto, :stock, :destacado, :activo, :orden)
          ON DUPLICATE KEY UPDATE
            nombre = VALUES(nombre), categoria = VALUES(categoria), presentacion = VALUES(presentacion),
-           precio = VALUES(precio), descripcion = VALUES(descripcion), imagen = VALUES(imagen),
+           precio = VALUES(precio), descripcion = VALUES(descripcion), cientifico = VALUES(cientifico),
+           precauciones = VALUES(precauciones), imagen = VALUES(imagen),
            gramos = VALUES(gramos), largo_cm = VALUES(largo_cm), ancho_cm = VALUES(ancho_cm),
            alto_cm = VALUES(alto_cm), stock = VALUES(stock), destacado = VALUES(destacado),
            activo = VALUES(activo), orden = VALUES(orden)'
@@ -334,6 +339,8 @@ function guardarProducto(): never {
         'presentacion' => texto($d, 'presentacion', 40),
         'precio'       => decimal($d, 'precio'),
         'descripcion'  => texto($d, 'descripcion', 2000),
+        'cientifico'   => texto($d, 'cientifico', 120),
+        'precauciones' => texto($d, 'precauciones', 2000),
         'imagen'       => texto($d, 'imagen', 120),
         'gramos'       => entero($d, 'gramos', 0, 100000, 0),
         'largo'        => decimal($d, 'largo_cm', 0, 300),

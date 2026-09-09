@@ -100,7 +100,7 @@ Cuando cambies textos, fotos o estilos: sube por FTP solo los archivos que tocas
 datos y lo romperías. Lo mismo con el `.env`: cada servidor tiene el suyo, y el de tu
 computadora lleva llaves de prueba, no las de cobrar de verdad.
 
-Si cambiaste algún `.css` o `.js`, sube el número de `?v=9` en `index.html`,
+Si cambiaste algún `.css` o `.js`, sube el número de `?v=10` en `index.html`,
 `tienda.html`, `acceso.html` y `agenda.html`, o las clientas seguirán viendo la versión vieja
 guardada en su navegador.
 

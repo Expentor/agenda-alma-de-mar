@@ -47,6 +47,32 @@ function tablasListas(PDO $bd): bool {
     return $n === 3;
 }
 
+/* Columnas que se añadieron después de la primera versión. En una base que
+   ya existe, CREATE TABLE IF NOT EXISTS no las agrega, así que hay que
+   pedirlas a mano. Se comprueba antes de tocar nada porque MySQL 8 no admite
+   `ADD COLUMN IF NOT EXISTS` y reventaría al segundo intento. */
+function migrarColumnas(PDO $bd): array {
+    $nuevas = [
+        'cientifico'   => "ALTER TABLE productos ADD COLUMN cientifico VARCHAR(120) NOT NULL DEFAULT '' AFTER descripcion",
+        'precauciones' => "ALTER TABLE productos ADD COLUMN precauciones TEXT NULL AFTER cientifico",
+    ];
+
+    $st = $bd->prepare(
+        "SELECT COUNT(*) FROM information_schema.columns
+          WHERE table_schema = DATABASE() AND table_name = 'productos' AND column_name = ?"
+    );
+
+    $hechas = [];
+    foreach ($nuevas as $columna => $sql) {
+        $st->execute([$columna]);
+        if ((int) $st->fetchColumn() === 0) {
+            $bd->exec($sql);
+            $hechas[] = $columna;
+        }
+    }
+    return $hechas;
+}
+
 function crearTablas(PDO $bd): void {
     $sql = file_get_contents(__DIR__ . '/sql/tienda.sql');
     if ($sql === false) throw new RuntimeException('No se encontró sql/tienda.sql');
@@ -94,13 +120,37 @@ try {
     }
 
     if (!$pideAdmin) {
-        // ── 2. Catálogo ──
+        // ── 2. Columnas nuevas sobre una base que ya existía ──
+        try {
+            $hechas = migrarColumnas($bd);
+            if ($hechas) $resumen[] = 'Columnas añadidas a productos: ' . implode(', ', $hechas) . '.';
+        } catch (PDOException $e) {
+            $errores[] = 'No se pudieron añadir las columnas nuevas (cientifico, precauciones). '
+                       . 'Hace falta permiso de ALTER: vuelve a abrir esta página y da un usuario de MySQL que lo tenga.';
+            throw $e;
+        }
+
+        // ── 3. Catálogo ──
+        /* Nombre, categoría, presentación y precio SIEMPRE se refrescan: son los
+           datos de la lista oficial. La descripción, el nombre científico y las
+           precauciones solo se rellenan si están VACÍOS, para no pisar lo que
+           hayas escrito tú en el panel. */
+        /* Nombre, categoría, presentación y precio SIEMPRE se refrescan: son los
+           datos de la lista oficial. La descripción, el nombre científico y las
+           precauciones solo se rellenan si están VACÍOS, para no pisar lo que
+           hayas escrito tú en el panel.
+
+           La consulta va entre comillas DOBLES para poder escribir '' sin
+           escapar, que en una comparación SQL se lee mucho mejor. */
         $st = $bd->prepare(
-            'INSERT INTO productos (id, nombre, categoria, presentacion, precio, descripcion, orden)
-             VALUES (?, ?, ?, ?, ?, ?, ?)
+            "INSERT INTO productos (id, nombre, categoria, presentacion, precio, descripcion, cientifico, precauciones, orden)
+             VALUES (?, ?, ?, ?, ?, ?, ?, ?, ?)
              ON DUPLICATE KEY UPDATE
                nombre = VALUES(nombre), categoria = VALUES(categoria),
-               presentacion = VALUES(presentacion), precio = VALUES(precio)'
+               presentacion = VALUES(presentacion), precio = VALUES(precio),
+               descripcion  = IF(descripcion  IS NULL OR descripcion  = '', VALUES(descripcion),  descripcion),
+               cientifico   = IF(cientifico   IS NULL OR cientifico   = '', VALUES(cientifico),   cientifico),
+               precauciones = IF(precauciones IS NULL OR precauciones = '', VALUES(precauciones), precauciones)"
         );
 
         $antes = (int) $bd->query('SELECT COUNT(*) FROM productos')->fetchColumn();
@@ -111,7 +161,7 @@ try {
         $resumen[] = count(catalogoInicial()) . ' productos de la lista de precios procesados: '
                    . "$nuevos nuevos, " . (count(catalogoInicial()) - $nuevos) . ' actualizados.';
 
-        // ── 3. Fotos de categoría ──
+        // ── 4. Fotos de categoría ──
         $faltan = [];
         foreach (categoriasTienda() as $c) {
             if ($c['imagen'] === '')                                            { $faltan[] = trim($c['titulo'] . ' ' . $c['nota']); continue; }
@@ -121,7 +171,7 @@ try {
             ? 'Sin foto todavía: ' . implode(' · ', $faltan) . '. Se muestra un marcador con los colores de la marca.'
             : 'Todas las categorías tienen foto.';
 
-        // ── 4. Stripe ──
+        // ── 5. Stripe ──
         $resumen[] = stripeListo()
             ? 'Stripe configurado: la tienda ya puede cobrar.'
             : 'Falta STRIPE_SECRETO: copia el archivo .env.ejemplo como .env y pon ahí tus llaves de Stripe. Mientras, el catálogo y el carrito funcionan, y el botón de pagar avisa de que no está listo.';

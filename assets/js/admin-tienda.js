@@ -210,6 +210,8 @@
     f.presentacion.value = p.presentacion;
     f.precio.value       = p.precio;
     f.descripcion.value  = p.descripcion;
+    f.cientifico.value   = p.cientifico || '';
+    f.precauciones.value = p.precauciones || '';
     f.imagen.value       = p.imagen;
     f.stock.value        = p.stock === null ? '' : p.stock;
     f.gramos.value       = p.gramos   || '';
@@ -264,6 +266,8 @@
       presentacion: f.presentacion.value.trim(),
       precio: Number(f.precio.value),
       descripcion: f.descripcion.value.trim(),
+      cientifico: f.cientifico.value.trim(),
+      precauciones: f.precauciones.value.trim(),
       imagen: f.imagen.value.trim(),
       // Vacío no es cero: uno significa «no llevo control», el otro «agotado».
       stock: f.stock.value === '' ? null : Number(f.stock.value),
