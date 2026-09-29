@@ -76,7 +76,17 @@ function fechaCorta(iso) {
 }
 function aMinutos(hhmm) { const [h, m] = hhmm.split(':').map(Number); return h * 60 + m; }
 function aHora(min) { return `${String(Math.floor(min / 60)).padStart(2, '0')}:${String(min % 60).padStart(2, '0')}`; }
-function dinero(n) { return new Intl.NumberFormat('es-MX', { style: 'currency', currency: 'MXN', maximumFractionDigits: 0 }).format(n || 0); }
+/* Los precios cerrados se ven «$380»; los que llevan centavos, «$380.50»
+   con sus dos decimales. Un mínimo fijo de 0 dejaba «$380.5», que en dinero
+   se lee mal; y un máximo de 0 redondeaba $380.50 a «$381». */
+function dinero(n) {
+  const v = Number(n) || 0;
+  const decimales = Number.isInteger(v) ? 0 : 2;
+  return new Intl.NumberFormat('es-MX', {
+    style: 'currency', currency: 'MXN',
+    minimumFractionDigits: decimales, maximumFractionDigits: 2,
+  }).format(v);
+}
 
 /* ───────────── Consultas ───────────── */
 const citasDe = (iso) => datos.citas.filter(c => c.fecha === iso).sort((a, b) => a.hora.localeCompare(b.hora));

@@ -24,8 +24,17 @@
   let entrega    = 'envio';
 
   /* ───────────── Utilidades ───────────── */
-  const dinero = (n) => new Intl.NumberFormat('es-MX',
-    { style: 'currency', currency: 'MXN', maximumFractionDigits: 0 }).format(n || 0);
+  /* Los precios cerrados se ven «$380»; los que llevan centavos, «$380.50»
+     con sus dos decimales. Un mínimo fijo de 0 dejaba «$380.5», que en dinero
+     se lee mal; y un máximo de 0 redondeaba $380.50 a «$381». */
+  const dinero = (n) => {
+    const v = Number(n) || 0;
+    const decimales = Number.isInteger(v) ? 0 : 2;
+    return new Intl.NumberFormat('es-MX', {
+      style: 'currency', currency: 'MXN',
+      minimumFractionDigits: decimales, maximumFractionDigits: 2,
+    }).format(v);
+  };
 
   const escapar = (t) => String(t ?? '').replace(/[&<>"']/g, (ch) =>
     ({ '&': '&amp;', '<': '&lt;', '>': '&gt;', '"': '&quot;', "'": '&#39;' })[ch]);

@@ -68,7 +68,7 @@ window.ALMA = {
     { dia: 'Miércoles',  turnos: [['11:00', '14:00'], ['16:00', '20:00']] },
     { dia: 'Jueves',     turnos: [['11:00', '14:00'], ['16:00', '20:00']] },
     { dia: 'Viernes',    turnos: [['11:00', '14:00'], ['16:00', '20:00']] },
-    { dia: 'Sábado',     turnos: [['12:00', '17:00']] },
+    { dia: 'Sábado',     turnos: [['09:00', '14:00']] },
     { dia: 'Domingo',    turnos: [] },
   ],
 

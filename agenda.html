@@ -13,7 +13,7 @@
 <link rel="preconnect" href="https://fonts.googleapis.com">
 <link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
 <link href="https://fonts.googleapis.com/css2?family=Josefin+Sans:wght@200;300;400&family=Jost:wght@300;400;500&display=swap" rel="stylesheet">
-<link rel="stylesheet" href="assets/css/estilos.css?v=10">
+<link rel="stylesheet" href="assets/css/estilos.css?v=11">
 </head>
 <body>
 
@@ -184,7 +184,7 @@
           <label class="campo-grupo">Presentación
             <input class="campo" name="presentacion" placeholder="10 ml"></label>
           <label class="campo-grupo">Precio
-            <input class="campo" name="precio" type="number" min="0" step="10" required></label>
+            <input class="campo" name="precio" type="number" min="0" step="0.01" inputmode="decimal" required></label>
           <label class="campo-grupo">Existencias <span class="opcional">vacío = sin control</span>
             <input class="campo" name="stock" type="number" min="0" step="1"></label>
           <label class="campo-grupo">Nombre científico <span class="opcional">solo aceites puros</span>
@@ -271,7 +271,7 @@
           <label class="campo-grupo">Duración (min)
             <input class="campo" name="duracion" type="number" min="5" step="5" required></label>
           <label class="campo-grupo">Precio
-            <input class="campo" name="precio" type="number" min="0" step="10" required></label>
+            <input class="campo" name="precio" type="number" min="0" step="0.01" inputmode="decimal" required></label>
           <label class="campo-grupo campo-grupo--ancho">Descripción <span class="opcional">opcional, sale en la tarjeta de la página pública</span>
             <textarea class="campo campo--area" name="descripcion" rows="2"></textarea></label>
         </div>
@@ -348,7 +348,7 @@
       <label class="campo-grupo campo-grupo--ancho">Servicio
         <select class="campo" name="servicioId" id="select-servicio" required></select></label>
       <label class="campo-grupo">Duración (min)<input class="campo" type="number" name="duracion" min="5" step="5" required></label>
-      <label class="campo-grupo">Precio<input class="campo" type="number" name="precio" min="0" step="10" required></label>
+      <label class="campo-grupo">Precio<input class="campo" type="number" name="precio" min="0" step="0.01" inputmode="decimal" required></label>
       <label class="campo-grupo">Clienta<input class="campo" name="cliente" placeholder="Nombre y apellido" required></label>
       <label class="campo-grupo">Teléfono<input class="campo" name="telefono" inputmode="tel" placeholder="55 1234 5678"></label>
       <label class="campo-grupo">Terapeuta
@@ -381,10 +381,10 @@
 
 <div id="avisos" class="avisos" aria-live="polite"></div>
 
-<script src="assets/js/config.js?v=10"></script>
-<script src="assets/js/api.js?v=10"></script>
-<script src="assets/js/app.js?v=10"></script>
-<script src="assets/js/admin-tienda.js?v=10"></script>
-<script src="assets/js/auth.js?v=10"></script>
+<script src="assets/js/config.js?v=11"></script>
+<script src="assets/js/api.js?v=11"></script>
+<script src="assets/js/app.js?v=11"></script>
+<script src="assets/js/admin-tienda.js?v=11"></script>
+<script src="assets/js/auth.js?v=11"></script>
 </body>
 </html>

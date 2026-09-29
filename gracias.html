@@ -10,8 +10,8 @@
 <link rel="preconnect" href="https://fonts.googleapis.com">
 <link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
 <link href="https://fonts.googleapis.com/css2?family=Josefin+Sans:wght@200;300;400&family=Jost:wght@300;400;500&display=swap" rel="stylesheet">
-<link rel="stylesheet" href="assets/css/landing.css?v=10">
-<link rel="stylesheet" href="assets/css/tienda.css?v=10">
+<link rel="stylesheet" href="assets/css/landing.css?v=11">
+<link rel="stylesheet" href="assets/css/tienda.css?v=11">
 </head>
 <body>
 
@@ -26,8 +26,8 @@
   <p class="nota-centro">Buscando tu pedido…</p>
 </main>
 
-<script src="assets/js/config.js?v=10"></script>
-<script src="assets/js/api.js?v=10"></script>
+<script src="assets/js/config.js?v=11"></script>
+<script src="assets/js/api.js?v=11"></script>
 <script>
 /* La confirmación se lee del servidor con folio + token. El token va en el
    enlace al que Stripe devuelve a la clienta: sin él no se muestra nada, así
@@ -40,8 +40,17 @@
   const token  = params.get('t') || '';
   const caja   = document.getElementById('gracias');
 
-  const dinero = (n) => new Intl.NumberFormat('es-MX',
-    { style: 'currency', currency: 'MXN', maximumFractionDigits: 0 }).format(n || 0);
+  /* Los precios cerrados se ven «$380»; los que llevan centavos, «$380.50»
+     con sus dos decimales. Un mínimo fijo de 0 dejaba «$380.5», que en dinero
+     se lee mal; y un máximo de 0 redondeaba $380.50 a «$381». */
+  const dinero = (n) => {
+    const v = Number(n) || 0;
+    const decimales = Number.isInteger(v) ? 0 : 2;
+    return new Intl.NumberFormat('es-MX', {
+      style: 'currency', currency: 'MXN',
+      minimumFractionDigits: decimales, maximumFractionDigits: 2,
+    }).format(v);
+  };
 
   const escapar = (t) => String(t ?? '').replace(/[&<>"']/g, (ch) =>
     ({ '&': '&amp;', '<': '&lt;', '>': '&gt;', '"': '&quot;', "'": '&#39;' })[ch]);

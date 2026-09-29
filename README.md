@@ -320,7 +320,7 @@ assets/img/tienda/           Fotos: una por categoría y una por producto
 sql/tienda.sql               Tablas de la tienda
 ```
 
-Al cambiar un `.css` o un `.js`, sube el número de `?v=10` en `index.html`,
+Al cambiar un `.css` o un `.js`, sube el número de `?v=11` en `index.html`,
 `tienda.html`, `gracias.html`, `acceso.html` y `agenda.html`. Así los navegadores de tus clientas cogen la versión nueva en vez de la
 que tenían guardada.
 
