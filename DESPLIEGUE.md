@@ -93,16 +93,91 @@ servidor, ves lo mismo que en la computadora.
 
 ---
 
-## 7) Actualizar el sitio más adelante
+## 7) Actualizar el sitio con `git pull`
 
-Cuando cambies textos, fotos o estilos: sube por FTP solo los archivos que tocaste.
-**No subas nunca `api/config.php`** desde tu computadora: el del hosting tiene otros
-datos y lo romperías. Lo mismo con el `.env`: cada servidor tiene el suyo, y el de tu
-computadora lleva llaves de prueba, no las de cobrar de verdad.
+El sitio vive en un repositorio, así que actualizarlo es traer los cambios y, si
+la actualización trae datos o columnas nuevas, volver a pasar el instalador de
+la tienda. Este es el procedimiento completo, en orden.
 
-Si cambiaste algún `.css` o `.js`, sube el número de `?v=11` en `index.html`,
-`tienda.html`, `acceso.html` y `agenda.html`, o las clientas seguirán viendo la versión vieja
-guardada en su navegador.
+### Antes de tocar nada: respalda
+
+```bash
+mysqldump -u TU_USUARIO -p TU_BASE > ~/respaldo-$(date +%F).sql
+```
+
+Déjalo **fuera de `public_html`** (`~/` es un nivel arriba). Un volcado de tu base
+en la carpeta pública es un premio demasiado goloso, aunque el `.htaccess` deniegue
+los `.sql`.
+
+### 1. Mira si hay cambios locales que estorben
+
+```bash
+git status
+```
+
+Lo habitual es que salga `deleted: instalar.php` o `deleted: instalar-tienda.php`,
+porque los borras después de cada instalación —y haces bien—. **Si la actualización
+que viene toca esos archivos, el `git pull` se planta** con *«Your local changes
+would be overwritten by merge»*. La salida es devolverlos:
+
+```bash
+git restore instalar.php instalar-tienda.php
+```
+
+No pierdes nada: los vuelves a borrar al final.
+
+### 2. Trae los cambios
+
+```bash
+git pull origin main
+```
+
+**Ni `api/config.php` ni el `.env` se tocan**: los dos están en `.gitignore`, así que
+tu configuración de producción y tus llaves de Stripe se quedan como están.
+
+### 3. Vuelve a pasar el instalador de la tienda
+
+Abre `https://TU-DOMINIO/instalar-tienda.php`. Hace falta **cada vez que la
+actualización traiga productos, precios, textos, fotos o columnas nuevas**; si no
+trajo ninguna de esas cosas, puedes saltarte este paso.
+
+Si la actualización añade columnas a la tabla `productos`, el instalador necesita
+permiso de `ALTER`. Cuando el usuario de la aplicación no lo tiene, te pide un
+usuario de MySQL que sí —solo para ese paso, y no se guarda—.
+
+Lee el resumen que sale: te dice cuántos productos procesó, cuántos tienen foto y
+si falta configurar Stripe.
+
+> **Lo que el instalador NO pisa:** descripción, nombre botánico, precauciones y
+> foto solo se rellenan cuando están vacíos. Lo que hayas escrito o subido desde el
+> panel sobrevive. Nombre, categoría, presentación y precio sí se refrescan siempre,
+> porque son los datos de la lista oficial. Los pedidos no se tocan nunca.
+
+### 4. Borra los instaladores
+
+```bash
+rm -f instalar-tienda.php instalar.php
+```
+
+Mientras sigan ahí, cualquiera que dé con la dirección puede volver a sembrar el
+catálogo. Y sí: **cada `git pull` los trae de vuelta**, así que esto se repite en
+cada actualización.
+
+### 5. Comprueba
+
+- `https://TU-DOMINIO/` — la carta de tratamientos carga
+- `https://TU-DOMINIO/tienda.html` — el catálogo carga y las fotos se ven
+- `https://TU-DOMINIO/acceso.html` — entras al panel
+- Si dejaste el `.env` en la raíz: `https://TU-DOMINIO/.env` **debe dar 403 o 404**
+
+### Sobre la caché de los navegadores
+
+Los `.css` y `.js` llevan `?v=` en la dirección, y ese número sube en cada
+actualización que los cambia. Las clientas cogen la versión nueva solas; no hay
+que hacer nada. El HTML no se cachea (`.htaccess`), así que también entra al vuelo.
+
+**No subas archivos por FTP** si el sitio se actualiza con `git pull`: mezclar las
+dos cosas deja el repositorio con cambios locales que luego estorban.
 
 ---
 
